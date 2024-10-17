@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function Home() {
     const [text, setText] = useState<string>('');
-    const [isListening, setIsListening] = useState<boolean>(false);
+    const [isRecording, setIsRecording] = useState<boolean>(false)
 
     const handleListen = () => {
         if (!('webkitSpeechRecognition' in window)) {
@@ -16,7 +16,7 @@ export default function Home() {
         recognition.interimResults = false;
 
         recognition.onstart = () => {
-            setIsListening(true);
+            setIsRecording(true);
         };
 
         recognition.onresult = (event: any) => {
@@ -25,12 +25,12 @@ export default function Home() {
         };
 
         recognition.onend = () => {
-            setIsListening(false);
+            setIsRecording(false);
         };
 
         recognition.onerror = (event: any) => {
             console.error(event.error);
-            setIsListening(false);
+            setIsRecording(false);
         };
 
         recognition.start();
@@ -38,8 +38,8 @@ export default function Home() {
 
     return (
         <div style={{ padding: '20px' }}>
-            <button onClick={handleListen} disabled={isListening}>
-                {isListening ? 'Listening...' : 'Start Listening'}
+            <button onClick={handleListen} disabled={isRecording}>
+                {isRecording ? 'Listening...' : 'Start Listening'}
             </button>
             <div style={{ marginTop: '20px', fontSize: '18px' }}>
                 {text}
