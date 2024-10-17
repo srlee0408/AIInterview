@@ -1,49 +1,47 @@
 import React, { useState } from 'react';
 
-export default function Home() {
-    const [text, setText] = useState<string>('');
-    const [isRecording, setIsRecording] = useState<boolean>(false)
+function SpeechRecognitionComponent() {
+    const [isListening, setIsListening] = useState(false);
+    const [transcript, setTranscript] = useState('');
 
-    const handleListen = () => {
+    const startListening = () => {
         if (!('webkitSpeechRecognition' in window)) {
-            alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
+            alert('Web Speech API is not supported by this browser.');
             return;
         }
 
         const recognition = new (window as any).webkitSpeechRecognition();
         recognition.lang = 'ko-KR';
-        recognition.continuous = false;
         recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
         recognition.onstart = () => {
-            setIsRecording(true);
+            setIsListening(true);
         };
 
         recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            setText(transcript);
-        };
-
-        recognition.onend = () => {
-            setIsRecording(false);
+            setTranscript(event.results[0][0].transcript);
         };
 
         recognition.onerror = (event: any) => {
-            console.error(event.error);
-            setIsRecording(false);
+            console.error('Speech recognition error', event.error);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
         };
 
         recognition.start();
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <button onClick={handleListen} disabled={isRecording}>
-                {isRecording ? 'Listening...' : 'Start Listening'}
+        <div>
+            <button onClick={startListening} disabled={isListening}>
+                {isListening ? 'Listening...!!!!' : 'Start Listening'}
             </button>
-            <div style={{ marginTop: '20px', fontSize: '18px' }}>
-                {text}
-            </div>
+            <p>Transcript: {transcript}</p>
         </div>
     );
 }
+
+export default SpeechRecognitionComponent;
