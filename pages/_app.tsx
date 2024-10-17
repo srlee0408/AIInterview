@@ -1,6 +1,49 @@
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
+import React, { useState } from 'react';
 
-export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+export default function Home() {
+    const [text, setText] = useState<string>('');
+    const [isListening, setIsListening] = useState<boolean>(false);
+
+    const handleListen = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
+            return;
+        }
+
+        const recognition = new (window as any).webkitSpeechRecognition();
+        recognition.lang = 'ko-KR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setText(transcript);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error(event.error);
+            setIsListening(false);
+        };
+
+        recognition.start();
+    };
+
+    return (
+        <div style={{ padding: '20px' }}>
+            <button onClick={handleListen} disabled={isListening}>
+                {isListening ? 'Listening...' : 'Start Listening'}
+            </button>
+            <div style={{ marginTop: '20px', fontSize: '18px' }}>
+                {text}
+            </div>
+        </div>
+    );
 }
