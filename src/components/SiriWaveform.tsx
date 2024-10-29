@@ -8,16 +8,25 @@ interface SiriWaveformProps {
 export const SiriWaveform = ({ isListening }: SiriWaveformProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
-  const waveCount = 3;
-  const waves = useRef<Array<{ amplitude: number; frequency: number; phase: number }>>([]);
+  const waveCount = 5;
+  const waves = useRef<Array<{ amplitude: number; frequency: number; phase: number; color: string }>>([]);
 
   useEffect(() => {
     if (!waves.current.length) {
+      const colors = [
+        'rgba(37, 99, 235, 0.2)',  // primary
+        'rgba(79, 70, 229, 0.2)',  // secondary
+        'rgba(124, 58, 237, 0.2)', // purple
+        'rgba(79, 70, 229, 0.2)',  // secondary
+        'rgba(37, 99, 235, 0.2)',  // primary
+      ];
+
       for (let i = 0; i < waveCount; i++) {
         waves.current.push({
           amplitude: 0.3 + (i * 0.1),
-          frequency: 0.02 - (i * 0.005),
-          phase: 0
+          frequency: 0.02 - (i * 0.003),
+          phase: i * Math.PI / 3,
+          color: colors[i]
         });
       }
     }
@@ -31,7 +40,7 @@ export const SiriWaveform = ({ isListening }: SiriWaveformProps) => {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      waves.current.forEach((wave, index) => {
+      waves.current.forEach((wave) => {
         ctx.beginPath();
         ctx.moveTo(0, canvas.height / 2);
 
@@ -45,13 +54,8 @@ export const SiriWaveform = ({ isListening }: SiriWaveformProps) => {
           ctx.lineTo(x, y);
         }
 
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
-        gradient.addColorStop(0.5, 'rgba(79, 70, 229, 0.4)');
-        gradient.addColorStop(1, 'rgba(37, 99, 235, 0.2)');
-
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = wave.color;
+        ctx.lineWidth = 3;
         ctx.stroke();
 
         wave.phase += isListening ? 0.05 : 0.02;
@@ -77,9 +81,9 @@ export const SiriWaveform = ({ isListening }: SiriWaveformProps) => {
     >
       <canvas
         ref={canvasRef}
-        width={300}
-        height={150}
-        className="w-full max-w-md"
+        width={400}
+        height={200}
+        className="w-full max-w-lg"
       />
     </motion.div>
   );

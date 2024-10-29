@@ -1,13 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { SpeechButton } from './components/SpeechButton';
-import { TextDisplay } from './components/TextDisplay';
+import React, { useState, useEffect } from 'react';
+import { PhoneInput } from './components/PhoneInput';
 import { DarkModeToggle } from './components/DarkModeToggle';
-import { useSpeechRecognition } from './hooks/useSpeechRecognition';
+import { InterviewPrep } from './components/InterviewPrep';
+import { InterviewSession } from './components/InterviewSession';
+import { InterviewResult } from './components/InterviewResult';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
+type AppStep = 'phone' | 'prep' | 'interview' | 'result';
+
+interface InterviewAnswer {
+  question: string;
+  answer: string;
+}
+
 function App() {
-  const { text, isListening, startListening, stopListening, error } = useSpeechRecognition();
+  const [currentStep, setCurrentStep] = useState<AppStep>('phone');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [answers, setAnswers] = useState<InterviewAnswer[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
@@ -32,13 +42,26 @@ function App() {
     setIsDarkMode(prev => !prev);
   };
 
-  const handleSpeechToggle = useCallback(() => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  }, [isListening, startListening, stopListening]);
+  const handlePhoneSubmit = (phone: string) => {
+    setPhoneNumber(phone);
+    setCurrentStep('prep');
+  };
+
+  const handlePrepComplete = () => {
+    setCurrentStep('interview');
+  };
+
+  const handleInterviewComplete = (interviewAnswers: InterviewAnswer[]) => {
+    setAnswers(interviewAnswers);
+    setCurrentStep('result');
+  };
+
+  const handleResultClose = () => {
+    // 초기 상태로 리셋
+    setPhoneNumber('');
+    setAnswers([]);
+    setCurrentStep('phone');
+  };
 
   return (
     <div className={`min-h-screen min-h-[calc(var(--vh,1vh)*100)] ${isDarkMode ? 'dark' : ''}`}>
@@ -48,10 +71,10 @@ function App() {
         <motion.div
           className="absolute inset-0 bg-gradient-radial from-primary/20 to-transparent"
           animate={{
-            scale: isListening ? [1, 1.2, 1] : 1,
-            opacity: isListening ? 0.8 : 0.3,
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3],
           }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 8, repeat: Infinity }}
         />
 
         <div className="relative z-10 flex flex-col h-full">
@@ -59,36 +82,28 @@ function App() {
             <DarkModeToggle isDarkMode={isDarkMode} onToggle={toggleDarkMode} />
           </div>
           
-          <div className="flex-1 flex flex-col justify-between max-w-4xl mx-auto w-full px-4 py-6 md:py-12">
-            <motion.div 
-              className="flex flex-col items-center space-y-6 md:space-y-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <AnimatePresence mode="wait">
-                {error && (
-                  <motion.div 
-                    className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100/90 backdrop-blur-sm border border-red-400 text-red-700 px-6 py-3 rounded-lg shadow-lg max-w-[90vw] md:max-w-md"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <span className="block text-sm md:text-base text-center">{error}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="w-full flex-1 flex flex-col justify-center">
-                <SpeechButton
-                  isListening={isListening}
-                  onToggle={handleSpeechToggle}
+          <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full px-4 py-6 md:py-12">
+            <AnimatePresence mode="wait">
+              {currentStep === 'phone' && (
+                <PhoneInput onSubmit={handlePhoneSubmit} />
+              )}
+              {currentStep === 'prep' && (
+                <InterviewPrep onStart={handlePrepComplete} />
+              )}
+              {currentStep === 'interview' && (
+                <InterviewSession 
+                  phoneNumber={phoneNumber}
+                  onComplete={handleInterviewComplete}
                 />
-              </div>
-
-              <div className="w-full">
-                <TextDisplay text={text} />
-              </div>
-            </motion.div>
+              )}
+              {currentStep === 'result' && (
+                <InterviewResult
+                  phoneNumber={phoneNumber}
+                  answers={answers}
+                  onClose={handleResultClose}
+                />
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

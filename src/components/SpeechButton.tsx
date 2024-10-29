@@ -54,13 +54,14 @@ export const SpeechButton = ({ isListening, onToggle }: SpeechButtonProps) => {
           transition-all duration-300 group
           hover:shadow-2xl hover:shadow-primary/30
           active:scale-95 touch-none
+          ${isListening ? 'bg-red-500' : 'bg-green-500'}
         `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         animate={{
           boxShadow: isListening 
-            ? '0 0 50px rgba(59, 130, 246, 0.5)' 
-            : '0 0 20px rgba(59, 130, 246, 0.2)',
+            ? '0 0 50px rgba(239, 68, 68, 0.5)' 
+            : '0 0 20px rgba(34, 197, 94, 0.5)',
         }}
       >
         {/* 내부 링 효과 */}
@@ -87,25 +88,26 @@ export const SpeechButton = ({ isListening, onToggle }: SpeechButtonProps) => {
             repeat: isListening ? Infinity : 0,
           }}
         >
-          {isListening ? '녹음 중' : '눌러서 시작'}
+          {isListening ? '답변 종료' : '답변 시작'}
         </motion.span>
         <span className="text-white/70 text-xs md:text-sm z-10">
-          {isListening ? '클릭하여 중지' : '음성 인식 시작하기'}
+          {isListening ? '클릭하여 종료' : '클릭하여 시작'}
         </span>
       </motion.button>
 
-      {/* 상태 표시 */}
-      <motion.div
-        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-4 md:mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <span className={`text-xs md:text-sm ${
-          isListening ? 'text-primary' : 'text-gray-500'
-        } dark:text-gray-400`}>
-          {isListening ? '음성을 인식하고 있습니다...' : '대기 중'}
-        </span>
-      </motion.div>
+      {/* 답변 가능 표시 */}
+      {isListening && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="absolute bottom-0 left-1/1 transform -translate-x-1/2 translate-y-full mt-4"
+        >
+          <div className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg animate-pulse">
+            지금 대답해주세요
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

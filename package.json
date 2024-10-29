@@ -2,9 +2,13 @@
   "name": "speech-recognition-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://srlee0408.github.io/AIInterview",
   "dependencies": {
-    "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.1.5",
+    "openai": "^4.0.0",
+    "framer-motion": "^11.11.10",
+    "firebase": "^11.0.1",
+    "@headlessui/react": "^2.2.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -12,8 +16,6 @@
     "@types/node": "^16.18.115",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "firebase": "^11.0.1",
-    "framer-motion": "^11.11.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
@@ -25,7 +27,9 @@
     "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build && firebase deploy"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "firebase-deploy": "npm run build && firebase deploy"
   },
   "eslintConfig": {
     "extends": [
