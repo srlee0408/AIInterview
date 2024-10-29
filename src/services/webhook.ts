@@ -12,7 +12,7 @@ interface PhoneSubmitData {
 
 interface InterviewHistoryData {
   phoneNumber: string;
-  conversation: string;
+  history: string;
   timestamp: number;
 }
 
@@ -63,7 +63,7 @@ export const submitInterviewHistory = async (
   answers: Array<{question: string; answer: string}>
 ): Promise<void> => {
   try {
-    const conversation = answers.reduce((acc, curr, index) => {
+    const history = answers.reduce((acc, curr, index) => {
       if (index === 0) {
         return `면접관: ${curr.question}\n지원자: ${curr.answer}`;
       }
@@ -72,7 +72,7 @@ export const submitInterviewHistory = async (
 
     const data: InterviewHistoryData = {
       phoneNumber,
-      conversation,
+      history,
       timestamp: Date.now()
     };
 

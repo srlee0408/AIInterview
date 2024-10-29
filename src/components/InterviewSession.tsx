@@ -28,21 +28,27 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   const [answers, setAnswers] = useState<Array<{question: string; answer: string}>>([]);
   const [showEndMessage, setShowEndMessage] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // 면접 초기화
   useEffect(() => {
     const initialize = async () => {
+      if (isInitialized) return;
+
       try {
         const firstQuestion = await initializeInterview();
-        setCurrentQuestion(firstQuestion);
-        console.log('면접 시작 - 첫 질문:', firstQuestion);
+        if (firstQuestion) {
+          setCurrentQuestion(firstQuestion);
+          setIsInitialized(true);
+          console.log('면접 시작 - 첫 질문:', firstQuestion);
+        }
       } catch (err) {
         console.error('Error initializing interview:', err);
       }
     };
 
     initialize();
-  }, [initializeInterview]);
+  }, [initializeInterview, isInitialized]);
 
   const handleSpeechToggle = async () => {
     if (isListening) {
@@ -69,8 +75,14 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
           const { text: response, isEnd } = await sendAnswer(text);
           
           if (isEnd) {
-            setCurrentQuestion("면접이 종료되었습니다. 매니저에게 알림이 전송되었습니다. 잠시만 기다려주시기 바랍니다.");
+            const endMessage = "매니저에게 알림이 전송되었습니다. 잠시만 기다려주시기 바랍니다.";
+            setCurrentQuestion(endMessage);
             setShowEndMessage(true);
+            
+            // 종료 메시지도 음성으로 출력
+            const { textToSpeech, playAudio } = await import('../services/elevenlabs');
+            const audioData = await textToSpeech(endMessage);
+            await playAudio(audioData);
             
             await submitInterviewHistory(phoneNumber, newAnswers);
             
@@ -101,7 +113,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
       exit={{ opacity: 0 }}
       className="fixed inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
     >
-      <div className="w-full h-[25vh] md:h-[30vh] relative bg-black">
+      <div className="w-full h-[40vh] md:h-[60vh] relative bg-black">
         <WebcamPreview isActive={true} onError={console.error} />
       </div>
       
