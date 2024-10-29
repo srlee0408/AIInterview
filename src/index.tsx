@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import './firebase'; // Firebase 초기화 import
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(

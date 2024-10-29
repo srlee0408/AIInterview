@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "public",
+    "site": "aispeak-f73a6",
+    "public": "build",
     "ignore": [
       "firebase.json",
       "**/.*",
