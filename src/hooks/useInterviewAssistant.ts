@@ -98,7 +98,7 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       const response = await getResponse(threadId, run.id);
       
       const audioData = await textToSpeech(response);
-      await playAudioWithControl(audioData);
+      playAudioWithControl(audioData).catch(console.error);
       
       const isEnd = checkInterviewEnd(response);
       

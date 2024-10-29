@@ -15,8 +15,8 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
     if (isActive && !hasPermission) {
       navigator.mediaDevices.getUserMedia({ 
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 300 },
+          height: { ideal: 300 },
           facingMode: "user"
         },
         audio: true 
@@ -50,7 +50,7 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="relative w-full h-full bg-gray-900"
+      className="relative w-[300px] h-[300px] mx-auto bg-gray-900 overflow-hidden rounded-lg"
     >
       {/* 로딩 표시 */}
       <AnimatePresence>
@@ -75,7 +75,7 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
         autoPlay
         playsInline
         muted={true}
-        className={`w-full h-full object-cover ${
+        className={`w-[300px] h-[300px] object-cover ${
           hasPermission ? 'opacity-100' : 'opacity-0'
         }`}
       />
