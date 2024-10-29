@@ -7,6 +7,7 @@ interface SpeechButtonProps {
   onToggle: () => void;
   isAiSpeaking: boolean;
   isAnswering: boolean;
+  disabled: boolean;
 }
 
 export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering }: SpeechButtonProps) => {

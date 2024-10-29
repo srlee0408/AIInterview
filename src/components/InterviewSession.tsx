@@ -7,6 +7,7 @@ import { useWebcamRecorder } from '../hooks/useWebcamRecorder';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useInterviewAssistant } from '../hooks/useInterviewAssistant';
 import { submitInterviewHistory } from '../services/webhook';
+import { InterviewPrep } from './InterviewPrep';
 
 interface InterviewSessionProps {
   phoneNumber: string;
@@ -24,11 +25,13 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
     stopSpeaking
   } = useInterviewAssistant();
 
-  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState<string>('');
   const [answers, setAnswers] = useState<Array<{question: string; answer: string}>>([]);
   const [showEndMessage, setShowEndMessage] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
 
   // 면접 초기화
   useEffect(() => {
@@ -51,6 +54,8 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   }, [initializeInterview, isInitialized]);
 
   const handleSpeechToggle = async () => {
+    if (!isInitialized) return;
+
     if (isListening) {
       stopListening();
       stopRecording();
@@ -95,13 +100,18 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         } catch (err) {
           console.error('Error:', err);
         }
+      } else {
+        // 텍스트가 없으면 버튼 비활성화
+        setIsButtonDisabled(true);
       }
     } else {
       startListening();
       startRecording();
       setIsAnswering(true);
+      setIsButtonDisabled(false); // 답변 시작 시 버튼 활성화
     }
   };
+
 
   return (
     <motion.div
@@ -158,6 +168,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
               onToggle={handleSpeechToggle}
               isAiSpeaking={isAiSpeaking}
               isAnswering={isAnswering}
+              disabled={!isInitialized || isButtonDisabled}
             />
           </div>
 
