@@ -1,15 +1,12 @@
 {
   "files": {
-    "main.css": "/AIInterview/static/css/main.1440e3f9.css",
-    "main.js": "/AIInterview/static/js/main.6ec356b8.js",
-    "static/js/453.0abd9555.chunk.js": "/AIInterview/static/js/453.0abd9555.chunk.js",
-    "index.html": "/AIInterview/index.html",
-    "main.1440e3f9.css.map": "/AIInterview/static/css/main.1440e3f9.css.map",
-    "main.6ec356b8.js.map": "/AIInterview/static/js/main.6ec356b8.js.map",
-    "453.0abd9555.chunk.js.map": "/AIInterview/static/js/453.0abd9555.chunk.js.map"
+    "main.css": "/static/css/main.aa24def5.css",
+    "main.js": "/static/js/main.707d276d.js",
+    "static/js/206.abb20511.chunk.js": "/static/js/206.abb20511.chunk.js",
+    "index.html": "/index.html"
   },
   "entrypoints": [
-    "static/css/main.1440e3f9.css",
-    "static/js/main.6ec356b8.js"
+    "static/css/main.aa24def5.css",
+    "static/js/main.707d276d.js"
   ]
 }
