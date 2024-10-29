@@ -6,7 +6,7 @@ interface UseInterviewAssistantReturn {
   isAiSpeaking: boolean;
   error: string | null;
   initializeInterview: () => Promise<string>;
-  sendAnswer: (answer: string) => Promise<string>;
+  sendAnswer: (answer: string) => Promise<{ text: string; isEnd: boolean }>;
   stopSpeaking: () => void;
 }
 
@@ -16,6 +16,12 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const isPlayingRef = useRef<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const checkInterviewEnd = useCallback((response: string): boolean => {
+    return response.includes("면접이 종료되었습니다") || 
+           response.includes("면접을 마치겠습니다") || 
+           response.includes("수고하셨습니다.");
+  }, []);
 
   const stopCurrentAudio = () => {
     if (audioSourceRef.current && isPlayingRef.current) {
@@ -63,9 +69,9 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       const greeting = "테스트를 진행해보겠습니다. 질문 이후 하단의 '답변 시작'을 누른 후 답변 해주시면 됩니다. 답변이 완료되면 '답변 종료'를 누르시면 됩니다. 이제 '답변 시작'을 누른 후 '네 준비되었습니다' 라고 답변해주시고 '답변 종료'를 눌러주세요.";
       await addMessage(thread.id, greeting);
       
-      // 음성 생성 및 재생
+      // 음성 생성과 동시에 텍스트 반환
       const audioData = await textToSpeech(greeting);
-      await playAudioWithControl(audioData);
+      playAudioWithControl(audioData).catch(console.error); // 비동기로 실행
       
       return greeting;
     } catch (err) {
@@ -88,17 +94,20 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       const run = await runAssistant(threadId);
       const response = await getResponse(threadId, run.id);
       
-      // 음성 생성 및 재생
+      // 음성 생성과 동시에 텍스트 반환
       const audioData = await textToSpeech(response);
-      await playAudioWithControl(audioData);
+      playAudioWithControl(audioData).catch(console.error); // 비동기로 실행
       
-      return response;
+      // 면접 종료 여부 확인
+      const isEnd = checkInterviewEnd(response);
+      
+      return { text: response, isEnd };
     } catch (err) {
       console.error('Error sending answer:', err);
       setError('메시지 전송에 실패했습니다.');
       throw err;
     }
-  }, [threadId]);
+  }, [threadId, checkInterviewEnd]);
 
   const stopSpeaking = useCallback(() => {
     stopCurrentAudio();

@@ -5,10 +5,11 @@ import { useEffect } from 'react';
 interface SpeechButtonProps {
   isListening: boolean;
   onToggle: () => void;
+  isAiSpeaking: boolean;
+  isAnswering: boolean;
 }
 
-export const SpeechButton = ({ isListening, onToggle }: SpeechButtonProps) => {
-  // 햅틱 피드백 추가
+export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering }: SpeechButtonProps) => {
   useEffect(() => {
     if (window.navigator.vibrate) {
       window.navigator.vibrate(isListening ? [100] : [50]);
@@ -47,17 +48,18 @@ export const SpeechButton = ({ isListening, onToggle }: SpeechButtonProps) => {
       {/* 메인 버튼 */}
       <motion.button
         onClick={onToggle}
+        disabled={isAiSpeaking || (isAnswering && !isListening)}
         className={`
           relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-full 
           glass animate-gradient
           shadow-lg flex flex-col items-center justify-center
           transition-all duration-300 group
-          hover:shadow-2xl hover:shadow-primary/30
+          ${(isAiSpeaking || (isAnswering && !isListening)) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl hover:shadow-primary/30'}
           active:scale-95 touch-none
           ${isListening ? 'bg-red-500' : 'bg-green-500'}
         `}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: (isAiSpeaking || (isAnswering && !isListening)) ? 1 : 1.05 }}
+        whileTap={{ scale: (isAiSpeaking || (isAnswering && !isListening)) ? 1 : 0.95 }}
         animate={{
           boxShadow: isListening 
             ? '0 0 50px rgba(239, 68, 68, 0.5)' 
@@ -91,12 +93,14 @@ export const SpeechButton = ({ isListening, onToggle }: SpeechButtonProps) => {
           {isListening ? '답변 종료' : '답변 시작'}
         </motion.span>
         <span className="text-white/70 text-xs md:text-sm z-10">
-          {isListening ? '클릭하여 종료' : '클릭하여 시작'}
+          {isAiSpeaking ? 'AI 응답 중...' : 
+           (isAnswering && !isListening) ? '답변 진행 중...' :
+           (isListening ? '클릭하여 종료' : '클릭하여 시작')}
         </span>
       </motion.button>
 
       {/* 답변 가능 표시 */}
-      {isListening && (
+      {isListening && !isAiSpeaking && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

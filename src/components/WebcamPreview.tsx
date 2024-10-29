@@ -47,10 +47,10 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="relative w-full aspect-video max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gray-900"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="relative w-full h-full bg-gray-900"
     >
       {/* 로딩 표시 */}
       <AnimatePresence>
@@ -62,8 +62,8 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
             className="absolute inset-0 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm"
           >
             <div className="text-white text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4" />
-              <p>카메라 연결 중...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mb-2" />
+              <p className="text-sm">카메라 연결 중...</p>
             </div>
           </motion.div>
         )}
@@ -84,9 +84,9 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
       {!hasPermission && !isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white text-center p-4">
           <div>
-            <span className="text-4xl mb-4 block">📷</span>
-            <h3 className="text-xl font-bold mb-2">카메라 권한이 필요합니다</h3>
-            <p className="text-gray-400 text-sm">
+            <span className="text-3xl mb-2 block">📷</span>
+            <h3 className="text-lg font-bold mb-1">카메라 권한이 필요합니다</h3>
+            <p className="text-gray-400 text-xs">
               브라우저 설정에서 카메라 권한을 허용해주세요
             </p>
           </div>

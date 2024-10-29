@@ -48,20 +48,20 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full max-w-md mx-auto p-4 md:p-6"
+      className="w-full h-[100dvh] flex flex-col justify-center px-4 md:px-6"
     >
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
           AI 면접 시작하기
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm text-center mb-8">
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 md:mb-8">
           면접 결과를 받으실 전화번호를 입력해주세요
         </p>
         
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* 전화번호 표시 영역 */}
           <div className="relative">
-            <div className="w-full px-4 py-3 text-center text-2xl font-medium text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="w-full px-3 py-2 md:px-4 md:py-3 text-center text-xl md:text-2xl font-medium text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-700/50 rounded-lg">
               {formatPhoneNumber(phoneNumber) || '010-0000-0000'}
             </div>
             <AnimatePresence>
@@ -87,17 +87,17 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
           />
         </div>
 
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 md:mt-8 space-y-3 md:space-y-4">
           <div className="flex items-center justify-center space-x-2">
-            <span className="text-xl">🔒</span>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-lg md:text-xl">🔒</span>
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
               개인정보는 안전하게 보호됩니다
             </p>
           </div>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs text-center text-gray-400"
+            className="text-[10px] md:text-xs text-center text-gray-400"
           >
             입력하신 전화번호는 면접 결과 전송에만 사용됩니다
           </motion.div>

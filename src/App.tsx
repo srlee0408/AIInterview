@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { PhoneInput } from './components/PhoneInput';
 import { DarkModeToggle } from './components/DarkModeToggle';
-import { InterviewPrep } from './components/InterviewPrep';
 import { InterviewSession } from './components/InterviewSession';
-import { InterviewResult } from './components/InterviewResult';
+import { InterviewPrep } from './components/InterviewPrep';
+import { PhoneInput } from './components/PhoneInput';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
-type AppStep = 'phone' | 'prep' | 'interview' | 'result';
+type AppStep = 'phone' | 'prep' | 'interview';
 
 interface InterviewAnswer {
   question: string;
@@ -53,11 +52,6 @@ function App() {
 
   const handleInterviewComplete = (interviewAnswers: InterviewAnswer[]) => {
     setAnswers(interviewAnswers);
-    setCurrentStep('result');
-  };
-
-  const handleResultClose = () => {
-    // 초기 상태로 리셋
     setPhoneNumber('');
     setAnswers([]);
     setCurrentStep('phone');
@@ -94,13 +88,6 @@ function App() {
                 <InterviewSession 
                   phoneNumber={phoneNumber}
                   onComplete={handleInterviewComplete}
-                />
-              )}
-              {currentStep === 'result' && (
-                <InterviewResult
-                  phoneNumber={phoneNumber}
-                  answers={answers}
-                  onClose={handleResultClose}
                 />
               )}
             </AnimatePresence>

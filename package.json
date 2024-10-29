@@ -2,7 +2,7 @@
   "name": "speech-recognition-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://srlee0408.github.io/AIInterview",
+  "homepage": ".",
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "openai": "^4.0.0",
@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false PUBLIC_URL=. react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",

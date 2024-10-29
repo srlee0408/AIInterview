@@ -41,6 +41,9 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
       setCheckedItems(prev => prev.filter(i => i !== index));
     } else {
       setCheckedItems(prev => [...prev, index]);
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
     }
   };
 
@@ -51,57 +54,52 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full max-w-md mx-auto p-4 md:p-6"
+      className="w-full min-h-[100dvh] flex flex-col justify-center px-4 py-6 md:py-12"
     >
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
+        <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
           면접 준비하기
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm text-center mb-8">
+        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
           면접 시작 전 아래 항목들을 확인해주세요
         </p>
         
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3 md:space-y-4 mb-6">
           {prepItems.map((item, index) => (
             <motion.div
               key={index}
               className={`
                 relative overflow-hidden
-                flex items-start space-x-4 p-4 rounded-xl
+                flex items-start space-x-3 p-3 md:p-4 rounded-lg
                 bg-gradient-to-r ${item.color}
                 backdrop-blur-sm cursor-pointer
                 border border-gray-200/30 dark:border-gray-700/30
+                active:scale-[0.98] transition-transform duration-200
               `}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => handleCheck(index)}
             >
-              <div className="flex-shrink-0 text-2xl">{item.icon}</div>
-              <div className="flex-grow">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <div className="flex-shrink-0 text-xl md:text-2xl">{item.icon}</div>
+              <div className="flex-grow min-w-0">
+                <h3 className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200 truncate">
                   {item.title}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
                   {item.description}
                 </p>
               </div>
-              <motion.div
+              <div
                 className={`
-                  w-6 h-6 rounded-full flex items-center justify-center
+                  w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center flex-shrink-0
                   ${checkedItems.includes(index)
                     ? 'bg-green-500'
                     : 'bg-white/50 dark:bg-gray-700/50'}
                   transition-colors duration-200
                 `}
-                animate={{
-                  scale: checkedItems.includes(index) ? [1, 1.2, 1] : 1,
-                }}
-                transition={{ duration: 0.3 }}
               >
                 {checkedItems.includes(index) && (
-                  <CheckIcon className="w-4 h-4 text-white" />
+                  <CheckIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
                 )}
-              </motion.div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -112,7 +110,7 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
           onClick={onStart}
           disabled={!allChecked}
           className={`
-            w-full px-6 py-4 rounded-xl font-medium text-center
+            w-full py-3 md:py-4 rounded-lg font-medium text-center text-sm md:text-base
             transition-all duration-200
             ${allChecked
               ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-xl'
@@ -130,10 +128,10 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
               exit={{ opacity: 0, y: -10 }}
               className="mt-4 flex items-center justify-center space-x-2"
             >
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 {`${checkedItems.length}/${prepItems.length} 항목 확인됨`}
               </span>
-              <div className="w-32 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="w-24 md:w-32 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-primary"
                   animate={{
