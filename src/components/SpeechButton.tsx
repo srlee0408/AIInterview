@@ -18,101 +18,61 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering 
   }, [isListening]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full h-[40vh] md:h-[500px]">
-      {/* 배경 효과 */}
+    <div className="relative flex flex-col items-center justify-center w-full h-[20vh] md:h-[250px]">
+      {/* 배경 효과 - 더 부드럽고 명확한 색상으로 변경 */}
       <motion.div
-        className="absolute inset-0 animate-gradient rounded-full blur-3xl"
-        animate={{
-          scale: isListening ? [1, 1.1, 1] : 1,
-          opacity: isListening ? 0.8 : 0.3,
-        }}
-        transition={{
-          duration: 2,
-          repeat: isListening ? Infinity : 0,
+        className="absolute inset-0 rounded-full blur-xl"
+        style={{
+          background: isListening 
+            ? 'linear-gradient(to right, #ff6b6b, #ff8787)' 
+            : 'linear-gradient(to right, #40c057, #51cf66)',
+          opacity: 0.15
         }}
       />
       
-      {/* 웨이브폼 */}
-      <AnimatePresence>
-        {isListening && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <SiriWaveform isListening={isListening} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 메인 버튼 */}
+      {/* 메인 버튼 - 더 큰 크기와 명확한 디자인 */}
       <motion.button
         onClick={onToggle}
         disabled={isAiSpeaking || (isAnswering && !isListening)}
         className={`
-          relative z-10 w-32 h-32 md:w-40 md:h-40 rounded-full 
-          glass animate-gradient
-          shadow-lg flex flex-col items-center justify-center
-          transition-all duration-300 group
-          ${(isAiSpeaking || (isAnswering && !isListening)) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl hover:shadow-primary/30'}
-          active:scale-95 touch-none
+          relative z-10 w-60 h-40 md:w-60 md:h-40 rounded-2xl 
+          flex flex-col items-center justify-center
+          border-4 ${isListening ? 'border-red-500' : 'border-green-500'}
+          shadow-lg
           ${isListening ? 'bg-red-500' : 'bg-green-500'}
+          ${(isAiSpeaking || (isAnswering && !isListening)) 
+            ? 'opacity-50 cursor-not-allowed' 
+            : 'hover:shadow-2xl hover:brightness-110'}
+          transition-all duration-300
         `}
-        whileHover={{ scale: (isAiSpeaking || (isAnswering && !isListening)) ? 1 : 1.05 }}
-        whileTap={{ scale: (isAiSpeaking || (isAnswering && !isListening)) ? 1 : 0.95 }}
-        animate={{
-          boxShadow: isListening 
-            ? '0 0 50px rgba(239, 68, 68, 0.5)' 
-            : '0 0 20px rgba(34, 197, 94, 0.5)',
-        }}
+        whileTap={{ scale: 0.95 }}
       >
-        {/* 내부 링 효과 */}
-        <motion.div
-          className="absolute inset-2 rounded-full bg-white/10 backdrop-blur-sm"
-          animate={{
-            scale: isListening ? [1, 1.1, 1] : 1,
-            opacity: isListening ? [0.5, 0.8, 0.5] : 0.5,
-          }}
-          transition={{
-            duration: 2,
-            repeat: isListening ? Infinity : 0,
-          }}
-        />
+        {/* 아이콘 추가 */}
+        <div className="mb-2">
+          {isListening ? (
+            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+            </svg>
+          ) : (
+            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          )}
+        </div>
         
-        {/* 버튼 텍스트 */}
-        <motion.span 
-          className="text-white text-lg md:text-xl font-medium z-10 mb-1 md:mb-2"
-          animate={{
-            scale: isListening ? [1, 1.1, 1] : 1,
-          }}
-          transition={{
-            duration: 1,
-            repeat: isListening ? Infinity : 0,
-          }}
-        >
+        {/* 버튼 텍스트 - 더 큰 폰트 크기와 굵은 글씨 */}
+        <span className="text-white text-5xl md:text-5xl font-bold">
           {isListening ? '답변 종료' : '답변 시작'}
-        </motion.span>
-        <span className="text-white/70 text-xs md:text-sm z-10">
-          {isAiSpeaking ? 'AI 응답 중...' : 
-           (isAnswering && !isListening) ? '답변 진행 중...' :
-           (isListening ? '클릭하여 종료' : '클릭하여 시작')}
+        </span>
+        
+        {/* 상태 텍스트 - 더 명확한 안내 */}
+        <span className="text-white text-base md:text-lg mt-2">
+          {isAiSpeaking ? '면접관이 말하는 중...' : 
+           (isAnswering && !isListening) ? '답변 전송 중...' :
+           (isListening ? '지금 답변해 주세요' : '버튼을 눌러 답변 시작')}
         </span>
       </motion.button>
-
-      {/* 답변 가능 표시 */}
-      {isListening && !isAiSpeaking && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="absolute bottom-0 left-1/1 transform -translate-x-1/2 translate-y-full mt-4"
-        >
-          <div className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg animate-pulse">
-            지금 대답해주세요
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 };

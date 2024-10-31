@@ -75,8 +75,7 @@ export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
         autoPlay
         playsInline
         muted={true}
-        className={`w-[300px] h-[300px] object-cover ${
-          hasPermission ? 'opacity-100' : 'opacity-0'
+        className={`w-[300px] h-[300px] object-cover ${hasPermission ? 'opacity-100' : 'opacity-0'
         }`}
       />
 

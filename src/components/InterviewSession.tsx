@@ -123,22 +123,22 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
       exit={{ opacity: 0 }}
       className="fixed inset-0 flex justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
     >
-      <div className="w-full max-w-[480px] min-w-[320px] h-full flex flex-col relative">
-        <div className="w-[300px] h-[300px] mx-auto relative bg-black">
+      <div className="w-full max-w-[400px] min-w-[320px] h-full flex flex-col relative">
+        <div className="w-full max-w-[300px] min-w-[100px] h-full max-h-[300px] min-h-[100px] mx-auto relative bg-black">
           <div className="absolute inset-0">
             <WebcamPreview isActive={true} onError={console.error} />
           </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          <div className="sticky top-0 z-50 p-2 bg-gradient-to-b from-white/80 dark:from-gray-800/80">
+          <div className="sticky top-0 z-50 p-1 bg-gradient-to-b from-white/80 dark:from-gray-800/80">
             <AnimatePresence>
               {isAiSpeaking && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="bg-blue-500 text-white px-3 py-2 rounded-full shadow-lg flex items-center justify-center space-x-2 text-sm mx-auto max-w-[90%]"
+                  className="bg-blue-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center justify-center space-x-2 text-sm mx-auto max-w-[90%]"
                 >
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
@@ -151,13 +151,13 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
             </AnimatePresence>
           </div>
 
-          <div className="px-4 py-3">
+          <div className="px-4 py-1">
             <motion.div
               key={currentQuestion}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 shadow-sm"
+              className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-3 shadow-sm"
             >
               <h3 className="text-base md:text-lg font-medium text-gray-800 dark:text-white">
                 {currentQuestion}
@@ -165,7 +165,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
             </motion.div>
           </div>
 
-          <div className="p-4 flex justify-center">
+          <div className="px-4 py-1 flex justify-center">
             <SpeechButton
               isListening={isListening}
               onToggle={handleSpeechToggle}
@@ -174,8 +174,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
               disabled={!isInitialized || isButtonDisabled}
             />
           </div>
-
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-1">
             <div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-3 shadow-sm min-h-[100px]">
               <TextDisplay text={text} />
             </div>
