@@ -15,7 +15,14 @@ interface InterviewSessionProps {
 }
 
 export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionProps) => {
-  const { text, isListening, startListening, stopListening, error: speechError } = useSpeechRecognition();
+  const { 
+    text, 
+    isListening, 
+    startListening, 
+    stopListening, 
+    resetText,
+    error: speechError 
+  } = useSpeechRecognition();
   const { startRecording, stopRecording, isRecording, videoBlob, error: recordError } = useWebcamRecorder();
   const { 
     isAiSpeaking, 
@@ -30,12 +37,54 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   const [showEndMessage, setShowEndMessage] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  // 면접 초기화
+  useEffect(() => {
+    const initialize = async () => {
+      if (isInitialized) return;
+
+      try {
+        // 초기화 시작 시 버튼은 비활성화 상태 유지
+        setIsButtonDisabled(true);
+        
+        const greeting = await initializeInterview();
+        if (greeting) {
+          setCurrentQuestion(greeting);
+          setIsInitialized(true);
+          console.log('면접 시작 - 안내 메시지:', greeting);
+          // AI가 말하기를 끝내면 useEffect에서 버튼이 활성화됨
+        }
+      } catch (err) {
+        console.error('Error initializing interview:', err);
+      }
+    };
+
+    initialize();
+  }, [initializeInterview, isInitialized]);
+
+  // AI 응답 상태 변화 감지 (greeting 포함)
+  useEffect(() => {
+    // AI가 말하기 시작하면 버튼 비활성화
+    if (isAiSpeaking) {
+      setIsButtonDisabled(true);
+    }
+    // AI가 말하기를 끝내면 버튼 활성화 (greeting 포함)
+    else if (!isAiSpeaking && currentQuestion && isInitialized) {
+      setIsButtonDisabled(false);
+      resetText();
+    }
+  }, [isAiSpeaking, currentQuestion, isInitialized, resetText]);
+
+  // 새로운 질문이 설정될 때마다 버튼 비활성화
+  useEffect(() => {
+    if (currentQuestion) {
+      setIsButtonDisabled(true);
+    }
+  }, [currentQuestion]);
 
   const handleSpeechToggle = async () => {
-    console.log('isInitialized: ', isInitialized);
     if (!isInitialized) return;
-    console.log('isListening: ', isListening);
 
     if (isListening) {
       try {
@@ -45,7 +94,6 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         setIsAnswering(false);
         
         if (recognizedText && typeof recognizedText === 'string') {
-          
           const newAnswer = {
             question: currentQuestion,
             answer: recognizedText
@@ -59,8 +107,10 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
             timestamp: new Date().toISOString()
           });
 
+          setIsButtonDisabled(true);  // 답변 후 버튼 비활성화
+
           const { text: response, isEnd } = await sendAnswer(recognizedText);
-          console.log('AI 응답 받음:', { response, isEnd });
+          //console.log('AI 응답 받음:', { response, isEnd });
           
           if (isEnd) {
             const endMessage = "매니저에게 알림이 전송되었습니다. 잠시만 기다려주시기 바랍니다.";
@@ -77,44 +127,30 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
           }
 
           setCurrentQuestion(response);
-          setIsButtonDisabled(false);
+          // 버튼은 AI 음성이 끝날 때까지 비활성화 상태 유지
+          // isAiSpeaking 상태가 false가 될 때 useEffect에서 버튼을 활성화함
         }
       } catch (err) {
         console.error('답변 처리 중 오류:', err);
         setIsButtonDisabled(false);
       }
     } else {
+      // 이전 답변이 있거나 AI가 말하는 중이면 새로운 답변 시작을 막음
+      if (text || isAiSpeaking) {
+        console.log('이전 답변 있음 또는 AI 말하는 중:', { text, isAiSpeaking });
+        return;
+      }
+
       try {
         await startListening();
         startRecording();
         setIsAnswering(true);
-        setIsButtonDisabled(false);
       } catch (err) {
         console.error('음성 인식 시작 중 오류:', err);
         setIsButtonDisabled(false);
       }
     }
   };
-
-  // 면접 초기화
-  useEffect(() => {
-    const initialize = async () => {
-      if (isInitialized) return;
-
-      try {
-        const greeting = await initializeInterview();
-        if (greeting) {
-          setCurrentQuestion(greeting);
-          setIsInitialized(true);
-          console.log('면접 시작 - 안내 메시지:', greeting);
-        }
-      } catch (err) {
-        console.error('Error initializing interview:', err);
-      }
-    };
-
-    initialize();
-  }, [initializeInterview, isInitialized]);
 
   return (
     <motion.div

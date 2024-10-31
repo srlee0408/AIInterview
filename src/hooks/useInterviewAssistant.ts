@@ -62,15 +62,16 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       // 초기 안내 메시지
       const greeting = "테스트를 진행해보겠습니다. 질문 이후 하단의 '답변 시작'을 누른 후 답변 해주시면 됩니다. 답변이 완료되면 '답변 종료'를 누르시면 됩니다. 이제 '답변 시작'을 누른 후 '네 준비되었습니다' 라고 답변해주시고 '답변 종료'를 눌러주세요.";
       
-      // 음성 변환 준비와 동시에 텍스트 반환
-      const audioPromise = textToSpeech(greeting);
-      
-      // 먼저 텍스트 응답 반환
-      audioPromise.then(audioData => {
-        playAudioWithControl(audioData);
-      }).catch(err => {
+      // 음성 변환 및 재생이 완료될 때까지 대기
+      try {
+        setIsAiSpeaking(true);  // 음성 재생 시작
+        const audioData = await textToSpeech(greeting);
+        await playAudioWithControl(audioData);
+        setIsAiSpeaking(false);  // 음성 재생 완료
+      } catch (err) {
         console.error('음성 재생 중 오류:', err);
-      });
+        setIsAiSpeaking(false);
+      }
       
       return greeting;
     } catch (err) {
@@ -86,7 +87,7 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
     }
 
     try {
-      console.log('Sending answer to thread:', { threadId, answer });
+      //console.log('Sending answer to thread:', { threadId, answer });
       
       // 첫 답변("네 준비되었습니다")인 경우 면접 시작
       if (answer.includes("준비되었습니다")) {
@@ -119,9 +120,10 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       const run = await runAssistant(threadId);
       const response = await getResponse(threadId, run.id);
       
-      console.log('Received response:', response);
+      //console.log('Received response:', response);
 
       // 음성 변환 준비와 동시에 텍스트 반환
+      setIsAiSpeaking(true);  // 음성 재생 시작
       const audioPromise = textToSpeech(response);
       
       const isEnd = response.includes('면접이 종료되었습니다') || 

@@ -70,7 +70,7 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering 
         <span className="text-white text-base md:text-lg mt-2">
           {isAiSpeaking ? 'AI면접관이 말하는 중...' :
            (isAnswering && !isListening) ? '답변 전송 중...' :
-           (isListening ? '지금 답변해 주세요' : '버튼을 눌러 답변을 해주세요')}
+           (isListening ? '답변 완료 후 버튼을 눌러주세요' : '버튼을 눌러 답변을 해주세요')}
         </span>
       </motion.button>
     </div>

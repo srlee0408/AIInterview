@@ -6,6 +6,7 @@ interface UseSpeechRecognitionReturn {
   isListening: boolean;
   startListening: () => Promise<void>;
   stopListening: () => Promise<string>;
+  resetText: () => void;
   error: string | null;
 }
 
@@ -13,6 +14,10 @@ export const useSpeechRecognition = (): UseSpeechRecognitionReturn => {
   const [text, setText] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const resetText = useCallback(() => {
+    setText('');
+  }, []);
 
   const startListening = useCallback(async () => {
     try {
@@ -53,6 +58,7 @@ export const useSpeechRecognition = (): UseSpeechRecognitionReturn => {
     isListening,
     startListening,
     stopListening,
+    resetText,
     error
   };
 };
