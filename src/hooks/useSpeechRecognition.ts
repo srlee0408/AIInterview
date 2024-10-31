@@ -37,7 +37,7 @@ export const useSpeechRecognition = (): UseSpeechRecognitionReturn => {
         setText(result.text);
         return result.text;
       } else {
-        setError('음성 인식에 실패했습니다.');
+        setError('음성 인식에 실패했습니다. 다시 시도해주세요.');
         return '';
       }
     } catch (err) {

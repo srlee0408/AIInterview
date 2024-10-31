@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { DarkModeToggle } from './components/DarkModeToggle';
+import { PhoneInput } from './components/PhoneInput';
 import { InterviewSession } from './components/InterviewSession';
 import { InterviewPrep } from './components/InterviewPrep';
-import { PhoneInput } from './components/PhoneInput';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
@@ -17,9 +16,6 @@ function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [answers, setAnswers] = useState<InterviewAnswer[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
 
   // 모바일 뷰포트 높이 설정
   useEffect(() => {
@@ -32,14 +28,6 @@ function App() {
     window.addEventListener('resize', setVH);
     return () => window.removeEventListener('resize', setVH);
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
-  };
 
   const handlePhoneSubmit = (phone: string) => {
     setPhoneNumber(phone);
@@ -58,8 +46,8 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen min-h-[calc(var(--vh,1vh)*100)] ${isDarkMode ? 'dark' : ''}`}>
-      <div className="relative min-h-screen min-h-[calc(var(--vh,1vh)*100)] overflow-hidden bg-gradient-to-br from-background via-background to-background-dark dark:from-gray-900 dark:via-background-dark dark:to-black">
+    <div className="min-h-screen min-h-[calc(var(--vh,1vh)*100)] dark">
+      <div className="relative min-h-screen min-h-[calc(var(--vh,1vh)*100)] overflow-hidden bg-gradient-to-br from-gray-900 via-background-dark to-black">
         {/* 배경 효과 */}
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <motion.div
@@ -72,10 +60,6 @@ function App() {
         />
 
         <div className="relative z-10 flex flex-col h-full">
-          <div className="absolute top-4 right-4 z-20">
-            <DarkModeToggle isDarkMode={isDarkMode} onToggle={toggleDarkMode} />
-          </div>
-          
           <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full px-4 py-6 md:py-12">
             <AnimatePresence mode="wait">
               {currentStep === 'phone' && (

@@ -123,8 +123,8 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
       exit={{ opacity: 0 }}
       className="fixed inset-0 flex justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
     >
-      <div className="w-full max-w-[400px] min-w-[320px] h-full flex flex-col relative">
-        <div className="w-full max-w-[300px] min-w-[100px] h-full max-h-[300px] min-h-[100px] mx-auto relative bg-black">
+      <div className="w-full max-w-[400px] min-w-[300px] h-full flex flex-col relative">
+        <div className="w-full max-w-[300px] min-w-[300px] h-full max-h-[300px] min-h-[300px] mx-auto relative bg-black">
           <div className="absolute inset-0">
             <WebcamPreview isActive={true} onError={console.error} />
           </div>
@@ -159,9 +159,9 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
               exit={{ opacity: 0, x: -20 }}
               className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-3 shadow-sm"
             >
-              <h3 className="text-base md:text-lg font-medium text-gray-800 dark:text-white">
+              <h2 className="text-base md:text-2xl font-medium text-gray-800 dark:text-white">
                 {currentQuestion}
-              </h3>
+              </h2>
             </motion.div>
           </div>
 

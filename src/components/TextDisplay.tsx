@@ -13,8 +13,8 @@ export const TextDisplay = ({ text }: TextDisplayProps) => {
     >
       <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm overflow-hidden">
         <div className="p-2 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-700/50">
-          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-200">
-            인식된 텍스트
+          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-200 w-full text-center">
+            답변 내용
           </h2>
           <motion.div
             animate={{
@@ -45,9 +45,6 @@ export const TextDisplay = ({ text }: TextDisplayProps) => {
                 exit={{ opacity: 0, y: -10 }}
                 className="text-center py-2"
               >
-                <p className="text-gray-400 dark:text-gray-500 text-sm italic">
-                  마이크 버튼을 눌러 음성 인식을 시작하세요
-                </p>
               </motion.div>
             )}
           </AnimatePresence>
