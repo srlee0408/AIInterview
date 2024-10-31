@@ -60,14 +60,14 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
           AI 면접 시작하기
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 md:mb-8">
-          면접 결과를 받으실 전화번호를 입력해주세요
+
         </p>
         
         <div className="space-y-6 md:space-y-8">
           {/* 전화번호 표시 영역 */}
           <div className="relative">
             <div className="w-full px-3 py-2 md:px-4 md:py-3 text-center text-xl md:text-2xl font-medium text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              {formatPhoneNumber(phoneNumber) || '010-0000-0000'}
+              {formatPhoneNumber(phoneNumber) || '면접 결과를 받으실 전화번호를 입력해주세요.'}
             </div>
             <AnimatePresence>
               {error && (
