@@ -31,60 +31,42 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   const [isAnswering, setIsAnswering] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
-
-  // 면접 초기화
-  useEffect(() => {
-    const initialize = async () => {
-      if (isInitialized) return;
-
-      try {
-        const firstQuestion = await initializeInterview();
-        if (firstQuestion) {
-          setCurrentQuestion(firstQuestion);
-          setIsInitialized(true);
-          console.log('면접 시작 - 첫 질문:', firstQuestion);
-        }
-      } catch (err) {
-        console.error('Error initializing interview:', err);
-      }
-    };
-
-    initialize();
-  }, [initializeInterview, isInitialized]);
 
   const handleSpeechToggle = async () => {
+    console.log('isInitialized: ', isInitialized);
     if (!isInitialized) return;
+    console.log('isListening: ', isListening);
 
     if (isListening) {
-      stopListening();
-      stopRecording();
-      stopSpeaking();
-      setIsAnswering(false);
+      try {
+        const recognizedText = await stopListening();
+        stopRecording();
+        stopSpeaking();
+        setIsAnswering(false);
+        
+        if (recognizedText && typeof recognizedText === 'string') {
+          
+          const newAnswer = {
+            question: currentQuestion,
+            answer: recognizedText
+          };
+          const newAnswers = [...answers, newAnswer];
+          setAnswers(newAnswers);
 
-      if (text) {
-        const newAnswer = {
-          question: currentQuestion,
-          answer: text
-        };
-        const newAnswers = [...answers, newAnswer];
-        setAnswers(newAnswers);
+          console.log('답변 전송:', {
+            question: currentQuestion,
+            answer: recognizedText,
+            timestamp: new Date().toISOString()
+          });
 
-        console.log('답변 완료:', {
-          question: currentQuestion,
-          answer: text,
-          timestamp: new Date().toISOString()
-        });
-
-        try {
-          const { text: response, isEnd } = await sendAnswer(text);
+          const { text: response, isEnd } = await sendAnswer(recognizedText);
+          console.log('AI 응답 받음:', { response, isEnd });
           
           if (isEnd) {
             const endMessage = "매니저에게 알림이 전송되었습니다. 잠시만 기다려주시기 바랍니다.";
             setCurrentQuestion(endMessage);
             setShowEndMessage(true);
             
-            // 웹훅으로 결과 전송
             await submitInterviewHistory(phoneNumber, newAnswers);
             
             setTimeout(() => {
@@ -94,24 +76,45 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
             return;
           }
 
-          // 응답을 즉시 표시하고 음성 재생
           setCurrentQuestion(response);
-          console.log('AI 응답:', response);
-        } catch (err) {
-          console.error('Error:', err);
+          setIsButtonDisabled(false);
         }
-      } else {
-        // 텍스트가 없으면 버튼 비활성화
-        setIsButtonDisabled(true);
+      } catch (err) {
+        console.error('답변 처리 중 오류:', err);
+        setIsButtonDisabled(false);
       }
     } else {
-      startListening();
-      startRecording();
-      setIsAnswering(true);
-      setIsButtonDisabled(false); // 답변 시작 시 버튼 활성화
+      try {
+        await startListening();
+        startRecording();
+        setIsAnswering(true);
+        setIsButtonDisabled(false);
+      } catch (err) {
+        console.error('음성 인식 시작 중 오류:', err);
+        setIsButtonDisabled(false);
+      }
     }
   };
 
+  // 면접 초기화
+  useEffect(() => {
+    const initialize = async () => {
+      if (isInitialized) return;
+
+      try {
+        const greeting = await initializeInterview();
+        if (greeting) {
+          setCurrentQuestion(greeting);
+          setIsInitialized(true);
+          console.log('면접 시작 - 안내 메시지:', greeting);
+        }
+      } catch (err) {
+        console.error('Error initializing interview:', err);
+      }
+    };
+
+    initialize();
+  }, [initializeInterview, isInitialized]);
 
   return (
     <motion.div

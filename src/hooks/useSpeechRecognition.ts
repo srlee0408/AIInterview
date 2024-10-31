@@ -1,87 +1,58 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
+import { whisperService } from '../services/whisper';
 
 interface UseSpeechRecognitionReturn {
   text: string;
   isListening: boolean;
-  startListening: () => void;
-  stopListening: () => void;
+  startListening: () => Promise<void>;
+  stopListening: () => Promise<string>;
   error: string | null;
 }
 
 export const useSpeechRecognition = (): UseSpeechRecognitionReturn => {
   const [text, setText] = useState<string>('');
-  const [isListening, setIsListening] = useState<boolean>(false);
+  const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  useEffect(() => {
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      const recognition = new SpeechRecognitionAPI();
+  const startListening = useCallback(async () => {
+    try {
+      setError(null);
+      setText('');
+      setIsListening(true);
+      await whisperService.startRecording();
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+      setError('음성 인식을 시작할 수 없습니다.');
+      setIsListening(false);
+    }
+  }, []);
+
+  const stopListening = useCallback(async () => {
+    try {
+      setIsListening(false);
+      const audioBlob = await whisperService.stopRecording();
+      const result = await whisperService.transcribe(audioBlob);
       
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'ko-KR';
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0])
-          .map(result => result.transcript)
-          .join('');
-        setText(transcript);
-      };
-
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Speech recognition error:', event);
-        setError(event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        console.log('Speech recognition ended');
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    } else {
-      setError('음성 인식이 지원되지 않는 브라우저입니다.');
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (err) {
-          console.error('Error stopping recognition:', err);
-        }
+      if (result.text) {
+        setText(result.text);
+        return result.text;
+      } else {
+        setError('음성 인식에 실패했습니다.');
+        return '';
       }
-    };
-  }, []);
-
-  const startListening = useCallback(() => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-        setError(null);
-        setText('');
-      } catch (err) {
-        console.error('Error starting recognition:', err);
-        setError('음성 인식 시작에 실패했습니다.');
-      }
+    } catch (err) {
+      console.error('Speech recognition error:', err);
+      setError('음성 인식 중 오류가 발생했습니다.');
+      setText('');
+      return '';
     }
   }, []);
 
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-        setIsListening(false);
-      } catch (err) {
-        console.error('Error stopping recognition:', err);
-      }
-    }
-  }, []);
-
-  return { text, isListening, startListening, stopListening, error };
+  return {
+    text,
+    isListening,
+    startListening,
+    stopListening,
+    error
+  };
 };

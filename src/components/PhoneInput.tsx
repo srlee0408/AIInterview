@@ -10,6 +10,7 @@ interface PhoneInputProps {
 export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleNumberClick = (number: string) => {
     if (phoneNumber.length < 11) {
@@ -37,7 +38,11 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
 
     try {
       await submitPhoneNumber(phoneNumber);
-      onSubmit(phoneNumber);
+      setShowSuccessPopup(true);
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+        onSubmit(phoneNumber);
+      }, 2000);
     } catch (err) {
       setError('전화번호 전송에 실패했습니다. 다시 시도해주세요.');
     }
@@ -102,6 +107,37 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
             입력하신 전화번호는 면접 결과 전송에만 사용됩니다
           </motion.div>
         </div>
+
+        <AnimatePresence>
+          {showSuccessPopup && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 flex items-center justify-center z-50"
+            >
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-green-500/20 max-w-[90%] mx-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 0.5 }}
+                    className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center"
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </motion.div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    전화번호가 등록되었습니다
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    면접을 시작합니다...
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

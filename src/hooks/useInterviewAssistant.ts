@@ -5,7 +5,7 @@ import { textToSpeech, playAudio } from '../services/elevenlabs';
 interface UseInterviewAssistantReturn {
   isAiSpeaking: boolean;
   error: string | null;
-  initializeInterview: () => Promise<string>;
+  initializeInterview: () => Promise<string | null>;
   sendAnswer: (answer: string) => Promise<{ text: string; isEnd: boolean }>;
   stopSpeaking: () => void;
 }
@@ -16,13 +16,6 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const isPlayingRef = useRef<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const isInitializedRef = useRef<boolean>(false);
-
-  const checkInterviewEnd = useCallback((response: string): boolean => {
-    return response.includes("면접이 종료되었습니다") || 
-           response.includes("면접을 마치겠습니다") || 
-           response.includes("수고하셨습니다.");
-  }, []);
 
   const stopCurrentAudio = () => {
     if (audioSourceRef.current && isPlayingRef.current) {
@@ -62,56 +55,104 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
   };
 
   const initializeInterview = useCallback(async () => {
-    if (isInitializedRef.current) {
-      return "";
-    }
-
     try {
       const thread = await createThread();
       setThreadId(thread.id);
       
+      // 초기 안내 메시지
       const greeting = "테스트를 진행해보겠습니다. 질문 이후 하단의 '답변 시작'을 누른 후 답변 해주시면 됩니다. 답변이 완료되면 '답변 종료'를 누르시면 됩니다. 이제 '답변 시작'을 누른 후 '네 준비되었습니다' 라고 답변해주시고 '답변 종료'를 눌러주세요.";
       
-      await addMessage(thread.id, greeting);
+      // 음성 변환 준비와 동시에 텍스트 반환
+      const audioPromise = textToSpeech(greeting);
       
-      const audioData = await textToSpeech(greeting);
-      await playAudioWithControl(audioData);
+      // 먼저 텍스트 응답 반환
+      audioPromise.then(audioData => {
+        playAudioWithControl(audioData);
+      }).catch(err => {
+        console.error('음성 재생 중 오류:', err);
+      });
       
-      isInitializedRef.current = true;
       return greeting;
     } catch (err) {
       console.error('Error initializing interview:', err);
       setError('면접 초기화에 실패했습니다.');
-      throw err;
+      return null;
     }
   }, []);
 
-  const sendAnswer = useCallback(async (answer: string) => {
+  const sendAnswer = useCallback(async (answer: string): Promise<{ text: string; isEnd: boolean }> => {
     if (!threadId) {
       throw new Error('면접이 초기화되지 않았습니다.');
     }
 
     try {
-      await addMessage(threadId, answer);
+      console.log('Sending answer to thread:', { threadId, answer });
       
+      // 첫 답변("네 준비되었습니다")인 경우 면접 시작
+      if (answer.includes("준비되었습니다")) {
+        // 실제 면접 시작 메시지 전송
+        await addMessage(threadId, "면접을 시작하겠습니다. 첫 번째 질문입니다.");
+        const run = await runAssistant(threadId);
+        const response = await getResponse(threadId, run.id);
+        
+        // 음성 변환 준비와 동시에 텍스트 반환
+        const audioPromise = textToSpeech(response);
+        
+        // 먼저 텍스트 응답 반환
+        const result = {
+          text: response,
+          isEnd: false
+        };
+
+        // 음성 재생은 백그라운드에서 처리
+        audioPromise.then(audioData => {
+          playAudioWithControl(audioData);
+        }).catch(err => {
+          console.error('음성 재생 중 오류:', err);
+        });
+        
+        return result;
+      }
+      
+      // 일반 답변 처리
+      await addMessage(threadId, answer);
       const run = await runAssistant(threadId);
       const response = await getResponse(threadId, run.id);
       
-      const audioData = await textToSpeech(response);
-      playAudioWithControl(audioData).catch(console.error);
+      console.log('Received response:', response);
+
+      // 음성 변환 준비와 동시에 텍스트 반환
+      const audioPromise = textToSpeech(response);
       
-      const isEnd = checkInterviewEnd(response);
-      
-      return { text: response, isEnd };
+      const isEnd = response.includes('면접이 종료되었습니다') || 
+                   response.includes('면접을 마치겠습니다') || 
+                   response.includes('수고하셨습니다');
+
+      // 먼저 텍스트 응답 반환
+      const result = {
+        text: response,
+        isEnd
+      };
+
+      // 음성 재생은 백그라운드에서 처리
+      audioPromise.then(audioData => {
+        playAudioWithControl(audioData);
+      }).catch(err => {
+        console.error('음성 재생 중 오류:', err);
+      });
+
+      return result;
+
     } catch (err) {
       console.error('Error sending answer:', err);
-      setError('메시지 전송에 실패했습니다.');
+      setError('답변 전송에 실패했습니다.');
       throw err;
     }
-  }, [threadId, checkInterviewEnd]);
+  }, [threadId]);
 
   const stopSpeaking = useCallback(() => {
     stopCurrentAudio();
+    setIsAiSpeaking(false);
   }, []);
 
   return {
@@ -119,6 +160,6 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
     error,
     initializeInterview,
     sendAnswer,
-    stopSpeaking,
+    stopSpeaking
   };
 }; 
