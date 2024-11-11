@@ -7,7 +7,6 @@ import { useWebcamRecorder } from '../hooks/useWebcamRecorder';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useInterviewAssistant } from '../hooks/useInterviewAssistant';
 import { submitInterviewHistory } from '../services/webhook';
-import { InterviewPrep } from './InterviewPrep';
 
 interface InterviewSessionProps {
   phoneNumber: string;
@@ -62,16 +61,23 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
 
     initialize();
   }, [initializeInterview, isInitialized]);
+  
+  // 텍스트 상태 변화 감지를 위한 useEffect 추가
+  useEffect(() => {
+    if (text) {
+      setIsButtonDisabled(true);  // 텍스트가 있으면 버튼 비활성화
+    }
+  }, [text]);
 
   // AI 응답 상태 변화 감지 (greeting 포함)
   useEffect(() => {
     // AI가 말하기 시작하면 버튼 비활성화
     if (isAiSpeaking) {
-      setIsButtonDisabled(true);
+      setIsButtonDisabled(true);  // AI 말하는 중에도 계속 비활성화
     }
     // AI가 말하기를 끝내면 버튼 활성화 (greeting 포함)
     else if (!isAiSpeaking && currentQuestion && isInitialized) {
-      setIsButtonDisabled(false);
+      setIsButtonDisabled(false);  // AI 응답이 완전히 끝난 후에만 버튼 활성화
       resetText();
     }
   }, [isAiSpeaking, currentQuestion, isInitialized, resetText]);
@@ -83,6 +89,11 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
     }
   }, [currentQuestion]);
 
+  // 상태 변화 추적을 위한 useEffect 추가
+  useEffect(() => {
+    console.log('버튼 상태 확인과정:', { isButtonDisabled });
+  }, [isButtonDisabled]);
+
   const handleSpeechToggle = async () => {
     if (!isInitialized) return;
 
@@ -92,26 +103,43 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         stopRecording();
         stopSpeaking();
         setIsAnswering(false);
-        
-        if (recognizedText && typeof recognizedText === 'string') {
+        setIsButtonDisabled(true);  // 답변 직후 버튼 비활성화
+        console.log('isListening', { isListening });
+
+        if (recognizedText && typeof recognizedText === 'string') { // 답변 텍스트 확인 및 저장
           const newAnswer = {
             question: currentQuestion,
             answer: recognizedText
           };
           const newAnswers = [...answers, newAnswer];
           setAnswers(newAnswers);
+          setIsButtonDisabled(true);  // 답변 후 버튼 비활성화
+          console.log('버튼 상태2', { isButtonDisabled });
+
+          // 한국 시간으로 timestamp 생성
+          const koreanTime = new Date().toLocaleString('ko-KR', {
+            timeZone: 'Asia/Seoul',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
 
           console.log('답변 전송:', {
             question: currentQuestion,
             answer: recognizedText,
-            timestamp: new Date().toISOString()
+            timestamp: koreanTime
           });
-
-          setIsButtonDisabled(true);  // 답변 후 버튼 비활성화
-
-          const { text: response, isEnd } = await sendAnswer(recognizedText);
-          //console.log('AI 응답 받음:', { response, isEnd });
           
+          // 답변 전송 및 AI 응답 대기
+          const { text: response, isEnd } = await sendAnswer(recognizedText);
+          setIsButtonDisabled(true);  // 답변 전송 후에도 버튼 비활성화 유지
+          // 버튼은 계속 비활성화 상태 유지
+          // AI 응답이 끝날 때까지 useEffect에서 활성화하지 않음
+
           if (isEnd) {
             const endMessage = "매니저에게 알림이 전송되었습니다. 잠시만 기다려주시기 바랍니다.";
             setCurrentQuestion(endMessage);
@@ -127,12 +155,10 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
           }
 
           setCurrentQuestion(response);
-          // 버튼은 AI 음성이 끝날 때까지 비활성화 상태 유지
-          // isAiSpeaking 상태가 false가 될 때 useEffect에서 버튼을 활성화함
         }
       } catch (err) {
         console.error('답변 처리 중 오류:', err);
-        setIsButtonDisabled(false);
+        setIsButtonDisabled(false);  // 에러 발생 시에만 버튼 활성화
       }
     } else {
       // 이전 답변이 있거나 AI가 말하는 중이면 새로운 답변 시작을 막음
@@ -187,7 +213,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
             </AnimatePresence>
           </div>
 
-          <div className="px-4 py-1">
+          {/* <div className="px-4 py-1">
             <motion.div
               key={currentQuestion}
               initial={{ opacity: 0, x: 20 }}
@@ -199,7 +225,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
                 {currentQuestion}
               </h2>
             </motion.div>
-          </div>
+          </div> */}
 
           <div className="px-4 py-1 flex justify-center">
             <SpeechButton
