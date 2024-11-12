@@ -64,10 +64,12 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       
       // 음성 변환 및 재생이 완료될 때까지 대기
       try {
-        setIsAiSpeaking(true);  // 음성 재생 시작
+        console.log('AI 말하기 시작');
+        setIsAiSpeaking(true);
         const audioData = await textToSpeech(greeting);
-        await playAudioWithControl(audioData);
-        setIsAiSpeaking(false);  // 음성 재생 완료
+        await playAudioWithControl(audioData);  // Promise가 완료될 때까지 대기
+        console.log('AI 말하기 종료');
+        setIsAiSpeaking(false);
       } catch (err) {
         console.error('음성 재생 중 오류:', err);
         setIsAiSpeaking(false);

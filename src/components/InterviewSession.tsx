@@ -52,6 +52,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
           setCurrentQuestion(greeting);
           setIsInitialized(true);
           console.log('면접 시작 - 안내 메시지:', greeting);
+          setIsButtonDisabled(false);
           // AI가 말하기를 끝내면 useEffect에서 버튼이 활성화됨
         }
       } catch (err) {
@@ -73,21 +74,21 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   useEffect(() => {
     // AI가 말하기 시작하면 버튼 비활성화
     if (isAiSpeaking) {
-      setIsButtonDisabled(true);  // AI 말하는 중에도 계속 비활성화
-    }
-    // AI가 말하기를 끝내면 버튼 활성화 (greeting 포함)
-    else if (!isAiSpeaking && currentQuestion && isInitialized) {
-      setIsButtonDisabled(false);  // AI 응답이 완전히 끝난 후에만 버튼 활성화
-      resetText();
+      console.log('AI 말하기 시작 - 버튼 비활성화:', isAiSpeaking);
+      setIsButtonDisabled(true);
+    } 
+    // 새로운 질문이 설정되었을 때 버튼 비활성화
+    else if (currentQuestion && !isAiSpeaking) {
+      if (!isInitialized) {
+        console.log('초기화 전 - 버튼 비활성화 유지');
+        setIsButtonDisabled(true);
+      } else {
+        console.log('AI 말하기 종료 & 초기화 완료 - 버튼 활성화');
+        setIsButtonDisabled(false);
+        resetText();
+      }
     }
   }, [isAiSpeaking, currentQuestion, isInitialized, resetText]);
-
-  // 새로운 질문이 설정될 때마다 버튼 비활성화
-  useEffect(() => {
-    if (currentQuestion) {
-      setIsButtonDisabled(true);
-    }
-  }, [currentQuestion]);
 
   // 상태 변화 추적을 위한 useEffect 추가
   useEffect(() => {
@@ -103,7 +104,6 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         stopRecording();
         stopSpeaking();
         setIsAnswering(false);
-        setIsButtonDisabled(true);  // 답변 직후 버튼 비활성화
         console.log('isListening', { isListening });
 
         if (recognizedText && typeof recognizedText === 'string') { // 답변 텍스트 확인 및 저장
