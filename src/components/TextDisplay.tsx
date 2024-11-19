@@ -13,7 +13,7 @@ export const TextDisplay = ({ text }: TextDisplayProps) => {
     >
       <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm overflow-hidden">
         <div className="p-2 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-700/50">
-          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-200 w-full text-center">
+          <h2 className="text-xl font-medium text-gray-700 dark:text-gray-200 w-full text-center">
             답변 내용
           </h2>
           <motion.div

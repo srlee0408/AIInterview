@@ -195,21 +195,28 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         <div className="flex-1 overflow-y-auto">
           <div className="sticky top-0 z-50 p-1 bg-gradient-to-b from-white/80 dark:from-gray-800/80">
             <AnimatePresence>
-              {isAiSpeaking && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="bg-blue-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center justify-center space-x-2 text-xl mx-auto max-w-[90%]"
+              >
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="bg-blue-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center justify-center space-x-2 text-sm mx-auto max-w-[90%]"
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="w-1.5 h-1.5 bg-white rounded-full"
-                  />
-                  <span>AI 면접관이 말하는 중...</span>
-                </motion.div>
-              )}
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="w-1.5 h-1.5 bg-white rounded-full"
+                />
+                <span>
+                  {isAiSpeaking 
+                    ? "면접관이 말하는 중..." 
+                    : <div className="text-center">
+                      질문을 다시 듣고 싶으시다면
+                      <br />
+                      <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
+                    </div>
+                  }
+                </span>
+              </motion.div>
             </AnimatePresence>
           </div>
 

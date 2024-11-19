@@ -37,9 +37,14 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering,
         className={`
           relative z-10 w-60 h-40 md:w-60 md:h-40 rounded-2xl 
           flex flex-col items-center justify-center
-          border-4 ${isListening ? 'border-red-500' : 'border-green-500'}
+          border-4 
+          ${(isAiSpeaking || (isAnswering && !isListening) || disabled)
+            ? 'border-gray-400 bg-gray-400'
+            : isListening
+              ? 'border-red-500 bg-red-500'
+              : 'border-green-500 bg-green-500'
+          }
           shadow-lg
-          ${isListening ? 'bg-red-500' : 'bg-green-500'}
           ${(isAiSpeaking || (isAnswering && !isListening) || disabled) 
             ? 'opacity-50 cursor-not-allowed' 
             : 'hover:shadow-2xl hover:brightness-110'}
