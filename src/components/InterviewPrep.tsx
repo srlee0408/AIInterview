@@ -8,6 +8,7 @@ interface InterviewPrepProps {
 
 export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
+  const [isStarting, setIsStarting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -90,6 +91,19 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
 
   const allChecked = checkedItems.length === prepItems.length;
 
+  const handleStart = async () => {
+    if (!allChecked || isStarting) return;
+    
+    setIsStarting(true);
+    try {
+      // 면접 시작 처리
+      onStart();
+    } catch (error) {
+      console.error('면접 시작 중 오류:', error);
+      setIsStarting(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -119,7 +133,7 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
           면접 준비하기
         </h2>
         <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
-          면접 시작 전 아래 항목들을 확인해주세요
+          면접 시작 전 아래 항목들을 확인 후 각 항목별로 눌러주세요.
         </p>
         
         <div className="space-y-3 md:space-y-4 mb-6">
@@ -165,17 +179,24 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
         <motion.button
           whileHover={{ scale: allChecked ? 1.02 : 1 }}
           whileTap={{ scale: allChecked ? 0.98 : 1 }}
-          onClick={onStart}
-          disabled={!allChecked}
+          onClick={handleStart}
+          disabled={!allChecked || isStarting}
           className={`
             w-full py-3 md:py-4 rounded-lg font-medium text-center text-sm md:text-base
             transition-all duration-200
-            ${allChecked
+            ${allChecked && !isStarting
               ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-xl'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}
           `}
         >
-          {allChecked ? '면접 시작하기' : '모든 항목을 확인해주세요'}
+          {isStarting ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>면접 준비중...</span>
+            </div>
+          ) : (
+            allChecked ? '면접 시작하기' : '모든 항목을 확인해주세요'
+          )}
         </motion.button>
 
         <AnimatePresence>

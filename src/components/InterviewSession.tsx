@@ -28,7 +28,8 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
     error: aiError,
     initializeInterview,
     sendAnswer,
-    stopSpeaking
+    stopSpeaking,
+    cleanup
   } = useInterviewAssistant();
 
   const [currentQuestion, setCurrentQuestion] = useState<string>('');
@@ -38,31 +39,47 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   const [isInitialized, setIsInitialized] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
-  // 면접 초기화
+  // 면접 초기화 - 한 번만 실행되도록 수정
   useEffect(() => {
+    let isMounted = true; // cleanup을 위한 flag
+
     const initialize = async () => {
-      if (isInitialized) return;
+      // 이미 초기화되었거나 초기화 중이면 리턴
+      if (isInitialized) {
+        console.log('이미 초기화되었습니다.');
+        return;
+      }
 
       try {
-        // 초기화 시작 시 버튼은 비활성화 상태 유지
+        console.log('면접 초기화 시작');
         setIsButtonDisabled(true);
         
-        const greeting = await initializeInterview();
-        if (greeting) {
-          setCurrentQuestion(greeting);
+        const firstQuestion = await initializeInterview();
+        
+        // 컴포넌트가 언마운트되지 않았을 때만 상태 업데이트
+        if (isMounted && firstQuestion) {
+          setCurrentQuestion(firstQuestion);
           setIsInitialized(true);
-          console.log('면접 시작 - 안내 메시지:', greeting);
+          console.log('면접 시작 - 첫 질문:', firstQuestion);
           setIsButtonDisabled(false);
-          // AI가 말하기를 끝내면 useEffect에서 버튼이 활성화됨
         }
       } catch (err) {
         console.error('Error initializing interview:', err);
+        if (isMounted) {
+          setIsButtonDisabled(false);
+        }
       }
     };
 
     initialize();
-  }, [initializeInterview, isInitialized]);
-  
+
+    // cleanup 함수
+    return () => {
+      isMounted = false;
+      cleanup();
+    };
+  }, []); // 의존성 배열을 비워서 한 번만 실행되도록 함
+
   // 텍스트 상태 변화 감지를 위한 useEffect 추가
   useEffect(() => {
     if (text) {
@@ -180,83 +197,99 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 flex justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="w-full min-h-[100dvh] flex flex-col justify-start px-4 py-6 md:py-12"
     >
-      <div className="w-full max-w-[400px] min-w-[300px] h-full flex flex-col relative">
-        <div className="w-full max-w-[300px] min-w-[300px] h-full max-h-[300px] min-h-[300px] mx-auto relative bg-black">
-          <div className="absolute inset-0">
-            <WebcamPreview isActive={true} onError={console.error} />
+      {/* 카메라 미리보기 */}
+      <div className="w-full max-w-[400px] min-w-[300px] h-full flex flex-col relative mx-auto mb-6">
+        <div className="w-full max-w-[300px] min-w-[300px] h-full max-h-[300px] min-h-[300px] mx-auto relative bg-black rounded-xl overflow-hidden">
+          <WebcamPreview isActive={true} onError={console.error} />
+          <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-full">
+            <p className="text-white text-sm">면접 진행중</p>
           </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          <div className="sticky top-0 z-50 p-1 bg-gradient-to-b from-white/80 dark:from-gray-800/80">
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-blue-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center justify-center space-x-2 text-xl mx-auto max-w-[90%]"
-              >
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="w-1.5 h-1.5 bg-white rounded-full"
-                />
-                <span>
-                  {isAiSpeaking 
-                    ? "면접관이 말하는 중..." 
-                    : <div className="text-center">
-                      질문을 다시 듣고 싶으시다면
-                      <br />
-                      <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
-                    </div>
-                  }
-                </span>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+      </div>
 
-          {/* <div className="px-4 py-1">
+      {/* 면접 컨텐츠 */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
+        {/* 상태 표시 */}
+        <div className="mb-6">
+          <AnimatePresence>
             <motion.div
-              key={currentQuestion}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-3 shadow-sm"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center justify-center space-x-2 text-sm md:text-base"
             >
-              <h2 className="text-base md:text-2xl font-medium text-gray-800 dark:text-white">
-                {currentQuestion}
-              </h2>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="w-1.5 h-1.5 bg-white rounded-full"
+              />
+              <span>
+                {isAiSpeaking 
+                  ? <div className="text-xl md:text-2xl font-medium"> 면접관이 말하는 중...</div> 
+                  : <div className="text-center text-xl">
+                    질문을 다시 듣고 싶으시다면
+                    <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
+                  </div>
+                }
+              </span>
             </motion.div>
-          </div> */}
-
-          <div className="px-4 py-1 flex justify-center">
-            <SpeechButton
-              isListening={isListening}
-              onToggle={handleSpeechToggle}
-              isAiSpeaking={isAiSpeaking}
-              isAnswering={isAnswering}
-              disabled={!isInitialized || isButtonDisabled}
-            />
-          </div>
-          <div className="px-4 pb-1">
-            <div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-3 shadow-sm min-h-[100px]">
-              <TextDisplay text={text} />
-            </div>
-          </div>
+          </AnimatePresence>
         </div>
 
+        {/* 답변 버튼 */}
+        <div className="flex justify-center mb-4">
+          <AnimatePresence>
+            {!showEndMessage && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <SpeechButton
+                  isListening={isListening}
+                  onToggle={handleSpeechToggle}
+                  isAiSpeaking={isAiSpeaking}
+                  isAnswering={isAnswering}
+                  disabled={!isInitialized || isButtonDisabled}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* 면접 종료 메시지 */}
+        <AnimatePresence>
+          {showEndMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="text-center text-lg md:text-xl text-gray-700 dark:text-gray-200 mb-4"
+            >
+              면접이 종료되었습니다. 수고하셨습니다.
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 답변 텍스트 표시 */}
+        <div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-4 shadow-sm min-h-[100px] mb-4">
+          <TextDisplay text={text} />
+        </div>
+
+        {/* 에러 메시지 */}
         <AnimatePresence>
           {(speechError || recordError || aiError) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed bottom-0 left-0 right-0 p-4 bg-red-500 text-white text-sm text-center max-w-[480px] mx-auto"
+              className="mt-4 p-3 bg-red-500 text-white text-sm rounded-lg text-center"
             >
               {speechError || recordError || aiError}
             </motion.div>
