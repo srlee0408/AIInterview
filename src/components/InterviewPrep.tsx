@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CheckIcon } from '@heroicons/react/24/solid';
 
 interface InterviewPrepProps {
@@ -8,6 +8,35 @@ interface InterviewPrepProps {
 
 export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // 카메라 초기화
+    const initCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false // 준비 화면에서는 오디오는 필요 없음
+        });
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error('카메라 접근 오류:', err);
+      }
+    };
+
+    initCamera();
+
+    // 컴포넌트 언마운트 시 카메라 스트림 정리
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const prepItems = [
     {
@@ -27,6 +56,18 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
       description: '얼굴이 잘 보이도록 카메라를 조정해주세요.',
       icon: '📸',
       color: 'from-indigo-500/20 to-indigo-600/20'
+    },
+    {
+      title: '답변 시작 및 종료 안내',
+      description: 'AI 면접관의 질문이 완전히 끝난 후 초록색 버튼을 누른 후 답변을 시작해주세요. 답변이 완료되면 빨간색 버튼을 눌러주시면 됩니다.',
+      icon: '⏱️',
+      color: 'from-amber-500/20 to-amber-600/20'
+    },
+    {
+      title: '질문 재요청',
+      description: '질문을 못 들으셨다면, 초록색 답변하기 버튼을 누른 후 "다시 말해주세요"라고 말씀해주세요.',
+      icon: '🔄',
+      color: 'from-teal-500/20 to-teal-600/20'
     },
     {
       title: '면접 시작',
@@ -54,8 +95,25 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full min-h-[100dvh] flex flex-col justify-center px-4 py-6 md:py-12"
+      className="w-full min-h-[100dvh] flex flex-col justify-start px-4 py-6 md:py-12"
     >
+      {/* 카메라 미리보기 */}
+      <div className="w-full max-w-[400px] min-w-[300px] h-full flex flex-col relative mx-auto mb-6">
+        <div className="w-full max-w-[300px] min-w-[300px] h-full max-h-[300px] min-h-[300px] mx-auto relative bg-black rounded-xl overflow-hidden">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover mirror"
+          />
+          <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-full">
+            <p className="text-white text-sm">카메라 미리보기</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 기존 체크리스트 */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
         <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
           면접 준비하기
@@ -80,10 +138,10 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
             >
               <div className="flex-shrink-0 text-xl md:text-2xl">{item.icon}</div>
               <div className="flex-grow min-w-0">
-                <h3 className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200 truncate">
+                <h3 className="text-lg md:text-2xl font-medium text-gray-700 dark:text-gray-200 truncate">
                   {item.title}
                 </h3>
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                <p className="text-base md:text-xl text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">
                   {item.description}
                 </p>
               </div>
@@ -147,3 +205,15 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
     </motion.div>
   );
 };
+
+// 스타일 추가
+const styles = `
+  .mirror {
+    transform: scaleX(-1);
+  }
+`;
+
+// 스타일 태그 추가
+const styleSheet = document.createElement("style");
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);

@@ -11,6 +11,7 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNumberClick = (number: string) => {
     if (phoneNumber.length < 11) {
@@ -37,13 +38,16 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
     }
 
     try {
+      setIsLoading(true);
       await submitPhoneNumber(phoneNumber);
+      setIsLoading(false);
       setShowSuccessPopup(true);
       setTimeout(() => {
         setShowSuccessPopup(false);
         onSubmit(phoneNumber);
       }, 2000);
     } catch (err) {
+      setIsLoading(false);
       setError('전화번호 전송에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -109,6 +113,41 @@ export const PhoneInput = ({ onSubmit }: PhoneInputProps) => {
         </div>
 
         <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 flex items-center justify-center z-50"
+            >
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-blue-500/20 max-w-[90%] mx-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-12 h-12"
+                  >
+                    <svg className="w-full h-full text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4.75V6.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M17.1266 6.87347L16.0659 7.93413" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M19.25 12L17.75 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M17.1266 17.1265L16.0659 16.0659" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 19.25V17.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M7.9342 16.0659L6.87354 17.1265" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M6.25 12L4.75 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M7.9342 7.93413L6.87354 6.87347" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </motion.div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    전화번호 등록 중...
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    잠시만 기다려주세요
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
           {showSuccessPopup && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
