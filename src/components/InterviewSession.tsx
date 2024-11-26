@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { SpeechButton } from './SpeechButton';
 import { TextDisplay } from './TextDisplay';
 import { WebcamPreview } from './WebcamPreview';
@@ -13,7 +13,7 @@ interface InterviewSessionProps {
   onComplete: (answers: Array<{question: string; answer: string}>) => void;
 }
 
-export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionProps) => {
+export const InterviewSession = memo(({ phoneNumber, onComplete }: InterviewSessionProps) => {
   const { 
     text, 
     isListening, 
@@ -38,6 +38,12 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
   const [isAnswering, setIsAnswering] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [cameraError, setCameraError] = useState<string>('');
+
+  const handleCameraError = useCallback((err: any) => {
+    console.error('카메라 오류:', err);
+    setCameraError('카메라 접근에 실패했습니다. 카메라 권한을 확인해주세요.');
+  }, []);
 
   // 면접 초기화 - 한 번만 실행되도록 수정
   useEffect(() => {
@@ -207,9 +213,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         <div className="w-full max-w-[250px] min-w-[250px] md:max-w-[300px] md:min-w-[300px] h-full max-h-[250px] min-h-[250px] md:max-h-[300px] md:min-h-[300px] mx-auto relative bg-black rounded-xl overflow-hidden">
           <WebcamPreview 
             isActive={true} 
-            onError={(err) => {
-              console.error('카메라 오류:', err);
-            }} 
+            onError={handleCameraError}
           />
           <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 bg-black/50 px-2 py-1 md:px-3 md:py-1 rounded-full">
             <p className="text-white text-xs md:text-sm">면접 진행중</p>
@@ -303,4 +307,6 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
       </div>
     </motion.div>
   );
-}; 
+});
+
+InterviewSession.displayName = 'InterviewSession'; 
