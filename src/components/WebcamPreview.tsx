@@ -8,38 +8,42 @@ interface WebcamPreviewProps {
 
 export const WebcamPreview = ({ isActive, onError }: WebcamPreviewProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasPermission, setHasPermission] = useState(true);
 
   useEffect(() => {
-    if (isActive && !hasPermission) {
-      navigator.mediaDevices.getUserMedia({ 
-        video: {
-          width: { ideal: 300 },
-          height: { ideal: 300 },
-          facingMode: "user"
-        },
-        audio: true 
-      })
-        .then(stream => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            setHasPermission(true);
+    let stream: MediaStream | null = null;
+
+    const initCamera = async () => {
+      if (!isActive) return;
+      
+      try {
+        // 이미 권한을 받았다고 가정하고 시도
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
           }
-        })
-        .catch(err => {
-          console.error('Webcam error:', err);
-          onError?.(err.message);
-          setHasPermission(false);
-        })
-        .finally(() => {
-          setIsLoading(false);
         });
-    }
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setHasPermission(true);
+        }
+      } catch (err) {
+        console.error('카메라 접근 오류:', err);
+        setHasPermission(false);
+        onError && onError(err as string);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initCamera();
 
     return () => {
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
+      if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };

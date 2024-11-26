@@ -200,41 +200,46 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full min-h-[100dvh] flex flex-col justify-start px-4 py-6 md:py-12"
+      className="w-full min-h-[100dvh] flex flex-col justify-start px-3 py-4 md:px-4 md:py-6"
     >
       {/* 카메라 미리보기 */}
-      <div className="w-full max-w-[400px] min-w-[300px] h-full flex flex-col relative mx-auto mb-6">
-        <div className="w-full max-w-[300px] min-w-[300px] h-full max-h-[300px] min-h-[300px] mx-auto relative bg-black rounded-xl overflow-hidden">
-          <WebcamPreview isActive={true} onError={console.error} />
-          <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-full">
-            <p className="text-white text-sm">면접 진행중</p>
+      <div className="w-full max-w-[300px] min-w-[250px] md:max-w-[400px] md:min-w-[300px] h-full flex flex-col relative mx-auto mb-4 md:mb-6">
+        <div className="w-full max-w-[250px] min-w-[250px] md:max-w-[300px] md:min-w-[300px] h-full max-h-[250px] min-h-[250px] md:max-h-[300px] md:min-h-[300px] mx-auto relative bg-black rounded-xl overflow-hidden">
+          <WebcamPreview 
+            isActive={true} 
+            onError={(err) => {
+              console.error('카메라 오류:', err);
+            }} 
+          />
+          <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 bg-black/50 px-2 py-1 md:px-3 md:py-1 rounded-full">
+            <p className="text-white text-xs md:text-sm">면접 진행중</p>
           </div>
         </div>
       </div>
 
       {/* 면접 컨텐츠 */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-3 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
         {/* 상태 표시 */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center justify-center space-x-2 text-sm md:text-base"
+              className="bg-blue-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg shadow-lg flex items-center justify-center space-x-2"
             >
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
-                className="w-1.5 h-1.5 bg-white rounded-full"
+                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-white rounded-full"
               />
               <span>
                 {isAiSpeaking 
-                  ? <div className="text-xl md:text-2xl font-medium"> 면접관이 말하는 중...</div> 
-                  : <div className="text-center text-xl">
-                    질문을 다시 듣고 싶으시다면
-                    <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
-                  </div>
+                  ? <div className="text-base md:text-2xl font-medium break-keep"> 면접관이 말하는 중...</div> 
+                  : <div className="text-center text-sm md:text-xl break-keep">
+                      질문을 다시 듣고 싶으시다면
+                      <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
+                    </div>
                 }
               </span>
             </motion.div>
@@ -242,7 +247,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         </div>
 
         {/* 답변 버튼 */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-3 md:mb-4">
           <AnimatePresence>
             {!showEndMessage && (
               <motion.div
@@ -270,7 +275,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="text-center text-lg md:text-xl text-gray-700 dark:text-gray-200 mb-4"
+              className="text-center text-sm md:text-xl text-gray-700 dark:text-gray-200 mb-3 md:mb-4 break-keep"
             >
               면접이 종료되었습니다. 수고하셨습니다.
             </motion.div>
@@ -278,7 +283,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
         </AnimatePresence>
 
         {/* 답변 텍스트 표시 */}
-        <div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-4 shadow-sm min-h-[100px] mb-4">
+        <div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-3 md:p-4 shadow-sm min-h-[80px] md:min-h-[100px] mb-3 md:mb-4">
           <TextDisplay text={text} />
         </div>
 
@@ -289,7 +294,7 @@ export const InterviewSession = ({ phoneNumber, onComplete }: InterviewSessionPr
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mt-4 p-3 bg-red-500 text-white text-sm rounded-lg text-center"
+              className="mt-3 md:mt-4 p-2 md:p-3 bg-red-500 text-white text-xs md:text-sm rounded-lg text-center break-keep"
             >
               {speechError || recordError || aiError}
             </motion.div>

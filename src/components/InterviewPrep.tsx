@@ -127,22 +127,22 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
         </div>
       </div>
 
-      {/* 기존 체크리스트 */}
+      {/* 체크리스트 컨테이너 */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
-        <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
+        <h2 className="text-base md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
           면접 최종 점검
         </h2>
-        <p className="text-xs md:text-2xl text-gray-500 dark:text-gray-400 text-center mb-6">
+        <p className="text-xs md:text-xl text-gray-500 dark:text-gray-400 text-center mb-4 md:mb-6">
           면접 시작 전 아래 항목들을 확인 후 각 항목별로 눌러주세요.
         </p>
         
-        <div className="space-y-3 md:space-y-4 mb-6">
+        <div className="space-y-2 md:space-y-4 mb-4 md:mb-6">
           {prepItems.map((item, index) => (
             <motion.div
               key={index}
               className={`
                 relative overflow-hidden
-                flex items-start space-x-3 p-3 md:p-4 rounded-lg
+                flex items-start space-x-2 md:space-x-3 p-3 md:p-4 rounded-lg
                 bg-gradient-to-r ${item.color}
                 backdrop-blur-sm cursor-pointer
                 border border-gray-200/30 dark:border-gray-700/30
@@ -150,18 +150,18 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
               `}
               onClick={() => handleCheck(index)}
             >
-              <div className="flex-shrink-0 text-xl md:text-2xl">{item.icon}</div>
+              <div className="flex-shrink-0 text-base md:text-2xl">{item.icon}</div>
               <div className="flex-grow min-w-0">
-                <h3 className="text-lg md:text-2xl font-medium text-gray-700 dark:text-gray-200 truncate">
+                <h3 className="text-sm md:text-xl font-medium text-gray-700 dark:text-gray-200">
                   {item.title}
                 </h3>
-                <p className="text-base md:text-xl text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">
+                <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 mt-1 md:mt-2 break-keep">
                   {item.description}
                 </p>
               </div>
               <div
                 className={`
-                  w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center flex-shrink-0
+                  w-4 h-4 md:w-6 md:h-6 rounded-full flex items-center justify-center flex-shrink-0
                   ${checkedItems.includes(index)
                     ? 'bg-green-500'
                     : 'bg-white/50 dark:bg-gray-700/50'}
@@ -169,20 +169,21 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
                 `}
               >
                 {checkedItems.includes(index) && (
-                  <CheckIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                  <CheckIcon className="w-2 h-2 md:w-4 md:h-4 text-white" />
                 )}
               </div>
             </motion.div>
           ))}
         </div>
 
+        {/* 시작 버튼 */}
         <motion.button
           whileHover={{ scale: allChecked ? 1.02 : 1 }}
           whileTap={{ scale: allChecked ? 0.98 : 1 }}
           onClick={handleStart}
           disabled={!allChecked || isStarting}
           className={`
-            w-full py-3 md:py-4 rounded-lg font-medium text-center text-sm md:text-base
+            w-full py-2 md:py-4 rounded-lg font-medium text-center text-sm md:text-base
             transition-all duration-200
             ${allChecked && !isStarting
               ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-xl'
@@ -191,26 +192,29 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
         >
           {isStarting ? (
             <div className="flex items-center justify-center space-x-2">
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>면접 준비중...</span>
+              <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="text-sm md:text-base">면접 준비중...</span>
             </div>
           ) : (
-            allChecked ? '면접 시작하기' : '모든 항목을 확인해주세요'
+            <span className="text-sm md:text-base">
+              {allChecked ? '면접 시작하기' : '모든 항목을 확인해주세요'}
+            </span>
           )}
         </motion.button>
 
+        {/* 진행 상태 표시 */}
         <AnimatePresence>
           {!allChecked && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mt-4 flex items-center justify-center space-x-2"
+              className="mt-3 md:mt-4 flex items-center justify-center space-x-2"
             >
               <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 {`${checkedItems.length}/${prepItems.length} 항목 확인됨`}
               </span>
-              <div className="w-24 md:w-32 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="w-20 md:w-32 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-primary"
                   animate={{
