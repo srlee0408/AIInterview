@@ -42,7 +42,7 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
   const prepItems = [
     {
       title: '카메라와 마이크 확인',
-      description: '카메라와 마이크가 정상적으로 작동하는지 확인해주세요.',
+      description: '카메라와 마이크가 정상적으로 작동하는지 확인했습니다.',
       icon: '🎥',
       color: 'from-blue-500/20 to-blue-600/20'
     },
@@ -54,7 +54,7 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
     },
     {
       title: '카메라 위치',
-      description: '얼굴이 잘 보이도록 카메라를 조정해주세요.',
+      description: '얼굴이 잘 보이도록 카메라를 조정했습니다.',
       icon: '📸',
       color: 'from-indigo-500/20 to-indigo-600/20'
     },
@@ -130,9 +130,9 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
       {/* 기존 체크리스트 */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg p-4 md:p-6 border border-gray-200/50 dark:border-gray-700/50">
         <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">
-          면접 준비하기
+          면접 최종 점검
         </h2>
-        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+        <p className="text-xs md:text-2xl text-gray-500 dark:text-gray-400 text-center mb-6">
           면접 시작 전 아래 항목들을 확인 후 각 항목별로 눌러주세요.
         </p>
         

@@ -4,8 +4,10 @@ import { InterviewSession } from './components/InterviewSession';
 import { InterviewPrep } from './components/InterviewPrep';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
+import { CameraCheck } from './components/CameraCheck';
+import { MicrophoneCheck } from './components/MicrophoneCheck';
 
-type AppStep = 'phone' | 'prep' | 'interview';
+type AppStep = 'phone' | 'camera' | 'microphone' | 'checklist' | 'prep' | 'interview';
 
 interface InterviewAnswer {
   question: string;
@@ -31,7 +33,15 @@ function App() {
 
   const handlePhoneSubmit = (phone: string) => {
     setPhoneNumber(phone);
-    setCurrentStep('prep');
+    setCurrentStep('camera');
+  };
+
+  const handleCameraComplete = () => {
+    setCurrentStep('microphone');
+  };
+
+  const handleMicrophoneComplete = () => {
+    setCurrentStep('checklist');
   };
 
   const handlePrepComplete = () => {
@@ -65,7 +75,13 @@ function App() {
               {currentStep === 'phone' && (
                 <PhoneInput onSubmit={handlePhoneSubmit} />
               )}
-              {currentStep === 'prep' && (
+              {currentStep === 'camera' && (
+                <CameraCheck onComplete={handleCameraComplete} />
+              )}
+              {currentStep === 'microphone' && (
+                <MicrophoneCheck onComplete={handleMicrophoneComplete} />
+              )}
+              {currentStep === 'checklist' && (
                 <InterviewPrep onStart={handlePrepComplete} />
               )}
               {currentStep === 'interview' && (

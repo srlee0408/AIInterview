@@ -35,7 +35,7 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering,
         onClick={onToggle}
         disabled={isAiSpeaking || (isAnswering && !isListening) || disabled}
         className={`
-          relative z-10 w-60 h-40 md:w-60 md:h-40 rounded-2xl 
+          relative z-10 w-[360px] h-[240px] rounded-2xl 
           flex flex-col items-center justify-center
           border-4 
           ${(isAiSpeaking || (isAnswering && !isListening) || disabled)
@@ -72,7 +72,7 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering,
         </span>
         
         {/* 상태 텍스트 - 더 명확한 안내 */}
-        <span className="text-white text-base md:text-lg mt-2">
+        <span className="text-white text-base md:text-3xl mt-2">
           {isAiSpeaking ? 'AI면접관이 말하는 중...' :
            (isAnswering && !isListening) ? '답변 전송 중...' :
            (isListening ? '답변 완료 후 버튼을 눌러주세요' : 
