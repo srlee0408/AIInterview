@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { createThread, addMessage, runAssistant, getResponse } from '../services/assistant';
-import { textToSpeech, playAudio } from '../services/elevenlabs';
+import { AudioManager } from '../services/AudioManager';
+import { textToSpeech } from '../services/elevenlabs';
 
 interface UseInterviewAssistantReturn {
   isAiSpeaking: boolean;
@@ -19,17 +20,18 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
   const isPlayingRef = useRef<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const initializationCompleteRef = useRef<boolean>(false);
+  const audioManager = useMemo(() => AudioManager.getInstance(), []);
 
-  const stopCurrentAudio = () => {
+  const stopCurrentAudio = useCallback(() => {
     if (audioSourceRef.current && isPlayingRef.current) {
       audioSourceRef.current.stop();
       audioSourceRef.current = null;
       isPlayingRef.current = false;
       setIsAiSpeaking(false);
     }
-  };
+  }, []);
 
-  const playAudioWithControl = async (audioData: ArrayBuffer): Promise<void> => {
+  const playAudioWithControl = useCallback(async (audioData: ArrayBuffer): Promise<void> => {
     return new Promise((resolve, reject) => {
       if (isPlayingRef.current) {
         console.log('이미 오디오가 재생중입니다.');
@@ -39,37 +41,29 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       stopCurrentAudio();
 
       try {
-        const AudioContext = window.AudioContext;
-        const audioContext = new AudioContext();
-        
-        audioContext.decodeAudioData(audioData).then(audioBuffer => {
-          const source = audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(audioContext.destination);
-          
-          audioSourceRef.current = source;
-          isPlayingRef.current = true;
-          setIsAiSpeaking(true);
+        audioManager.playAudio(audioData)
+          .then(source => {
+            audioSourceRef.current = source;
+            isPlayingRef.current = true;
+            setIsAiSpeaking(true);
 
-          source.onended = () => {
-            isPlayingRef.current = false;
-            setIsAiSpeaking(false);
-            audioSourceRef.current = null;
-            audioContext.close();
-            resolve();
-          };
-
-          source.start(0);
-        }).catch(error => {
-          console.error('오디오 디코딩 중 오류:', error);
-          reject(error);
-        });
+            source.onended = () => {
+              isPlayingRef.current = false;
+              setIsAiSpeaking(false);
+              audioSourceRef.current = null;
+              resolve();
+            };
+          })
+          .catch(error => {
+            console.error('오디오 재생 중 오류:', error);
+            reject(error);
+          });
       } catch (error) {
-        console.error('오디오 재생 중 오류:', error);
+        console.error('오디오 처리 중 오류:', error);
         reject(error);
       }
     });
-  };
+  }, [stopCurrentAudio]);
 
   const initializeInterview = useCallback(async () => {
     if (initializationCompleteRef.current || isInitializing || threadId) {
