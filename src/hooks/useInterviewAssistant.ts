@@ -74,10 +74,17 @@ export const useInterviewAssistant = (): UseInterviewAssistantReturn => {
       });
       return null;
     }
+
+    setIsInitializing(true);
     
     try {
       console.log('면접 초기화 시작');
-      setIsInitializing(true);
+      
+      if (initializationCompleteRef.current) {
+        console.log('다른 프로세스에서 이미 초기화가 완료됨');
+        setIsInitializing(false);
+        return null;
+      }
       
       const thread = await createThread();
       setThreadId(thread.id);
