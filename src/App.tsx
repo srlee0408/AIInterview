@@ -6,13 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 import { CameraCheck } from './components/CameraCheck';
 import { MicrophoneCheck } from './components/MicrophoneCheck';
-
-type AppStep = 'phone' | 'camera' | 'microphone' | 'checklist' | 'prep' | 'interview';
-
-interface InterviewAnswer {
-  question: string;
-  answer: string;
-}
+import { Tutorial } from './components/Tutorial';
+import { AppStep, InterviewAnswer } from './types/interview';
 
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>('phone');
@@ -45,6 +40,10 @@ function App() {
   };
 
   const handlePrepComplete = () => {
+    setCurrentStep('tutorial');
+  };
+
+  const handleTutorialComplete = (/* 인터뷰 관련 인자 필요 시 */) => {
     setCurrentStep('interview');
   };
 
@@ -83,6 +82,9 @@ function App() {
               )}
               {currentStep === 'checklist' && (
                 <InterviewPrep onStart={handlePrepComplete} />
+              )}
+              {currentStep === 'tutorial' && (
+                <Tutorial onComplete={handleTutorialComplete} />
               )}
               {currentStep === 'interview' && (
                 <InterviewSession 

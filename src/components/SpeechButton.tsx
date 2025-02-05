@@ -76,12 +76,12 @@ export const SpeechButton = ({ isListening, onToggle, isAiSpeaking, isAnswering,
         </span>
         
         {/* 상태 텍스트 */}
-        <span className="text-white text-[min(6vw,1rem)] px-2 text-center break-keep">
+        <span className="text-white text-[min(8vw,1.2rem)] px-2 text-center break-keep">
           {isAiSpeaking ? 'AI면접관이 말하는 중...' :
            (isAnswering && !isListening) ? '답변 전송 중...' :
            (isListening ? '답변 완료 후 버튼을 눌러주세요' : 
             disabled ? '답변이 전송되었습니다' :
-            '버튼을 눌러 답변을 해주세요'
+            '질문이 끝난 후 버튼을 눌러 답변을 해주세요'
            )}
         </span>
       </motion.button>

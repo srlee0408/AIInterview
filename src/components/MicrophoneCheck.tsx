@@ -76,7 +76,7 @@ export const MicrophoneCheck = ({ onComplete }: MicrophoneCheckProps) => {
           마이크 확인
         </h2>
         <p className="text-xs md:text-xl text-gray-500 dark:text-gray-400 text-center mb-6">
-          마이크가 잘 작동하는지 확인해주세요.
+          마이크 확인을 위해 <span className="text-yellow-400">"안녕하세요"</span> 라고 말씀해주세요.
         </p>
 
         {!isRecording ? (

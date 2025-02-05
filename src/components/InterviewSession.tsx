@@ -239,8 +239,8 @@ export const InterviewSession = memo(({ phoneNumber, onComplete }: InterviewSess
               />
               <span>
                 {isAiSpeaking 
-                  ? <div className="text-base md:text-2xl font-medium break-keep"> 면접관이 말하는 중...</div> 
-                  : <div className="text-center text-sm md:text-xl break-keep">
+                  ? <div className="text-base md:text-3xl font-medium break-keep"> 면접관이 말하는 중...</div> 
+                  : <div className="text-center text-xl md:text-2xl break-keep">
                       질문을 다시 듣고 싶으시다면
                       <span className="font-semibold text-yellow-200">'다시 말씀해주세요.'</span> 라고 답변해주세요.
                     </div>

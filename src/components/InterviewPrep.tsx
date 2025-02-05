@@ -196,7 +196,7 @@ export const InterviewPrep = ({ onStart }: InterviewPrepProps) => {
               <span className="text-sm md:text-base">면접 준비중...</span>
             </div>
           ) : (
-            <span className="text-sm md:text-base">
+            <span className="text-xl md:text-2xl">
               {allChecked ? '면접 시작하기' : '모든 항목을 확인해주세요'}
             </span>
           )}

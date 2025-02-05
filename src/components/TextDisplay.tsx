@@ -13,7 +13,7 @@ export const TextDisplay = ({ text }: TextDisplayProps) => {
     >
       <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm overflow-hidden">
         <div className="p-2 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-700/50">
-          <h2 className="text-xl font-medium text-gray-700 dark:text-gray-200 w-full text-center">
+          <h2 className="text-2xl font-medium text-gray-700 dark:text-gray-200 w-full text-center">
             답변 내용
           </h2>
           <motion.div
@@ -33,7 +33,7 @@ export const TextDisplay = ({ text }: TextDisplayProps) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="text-gray-700 dark:text-gray-200 text-sm whitespace-pre-wrap leading-relaxed"
+                className="text-gray-700 dark:text-gray-200 text-3xl whitespace-pre-wrap leading-relaxed"
               >
                 {text}
               </motion.p>
