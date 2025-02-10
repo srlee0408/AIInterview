@@ -191,14 +191,7 @@ export const Resume = () => {
               <ResumeTable
                 data={paginatedData}
                 onRowClick={(item) => {
-                  if (!item.resume_html || item.resume_html.trim() === '') {
-                    setAlertMessage('이력서 정보가 없습니다.');
-                    setShowAlert(true);
-                    setTimeout(() => setShowAlert(false), 3000);
-                    return;
-                  }
                   setSelectedItem(item);
-                  setShowResume(item.resume_html);
                 }}
                 onViewResume={(item, e) => {
                   e.stopPropagation();
@@ -362,7 +355,9 @@ const ResumeTable = ({
           <tr
             key={index}
             className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-            onClick={(e) => onRowClick(item)}
+            onClick={() => {
+              onRowClick(item);
+            }}
           >
             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
               {item.image ? (
