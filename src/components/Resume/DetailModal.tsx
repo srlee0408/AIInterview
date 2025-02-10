@@ -10,25 +10,34 @@ interface DetailModalProps {
 export const DetailModal = ({ item, onClose }: DetailModalProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold dark:text-white">상세 정보</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{item.name}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+          >
+            ✕
+          </button>
         </div>
-        
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* 기본 정보 */}
-          <div>
-            <h3 className="font-semibold mb-2 dark:text-white">기본 정보</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-600 dark:text-gray-400">이름</p>
-                <p className="dark:text-white">{item.name}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 dark:text-gray-400">연락처</p>
-                <p className="dark:text-white">{item.phone}</p>
-              </div>
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
+              <p className="font-medium text-gray-900 dark:text-white">
+                {formatPhoneNumber(item.phone)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">생년월일</p>
+              <p className="font-medium text-gray-900 dark:text-white">{item.birth}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">생성일</p>
+              <p className="font-medium text-gray-900 dark:text-white">
+                {new Date(item.createdate).toLocaleDateString()}
+              </p>
             </div>
           </div>
 
