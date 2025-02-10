@@ -60,29 +60,6 @@ export const Resume = () => {
       }
       
       const mappedData = data.map((item: any) => {
-        // resume_html이 null이 아닐 때만 이미지 교체 수행
-        const resume_html_with_image = item.resume_html 
-          ? item.resume_html.replace(
-              // alt="Profile"을 가진 이미지 태그를 찾아서 교체
-              /<img[^>]*alt="Profile"[^>]*>/gi,
-              `<img src="${item.image || ''}" alt="Profile" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">`
-            )
-          : '';
-
-        // 각 항목별 매핑된 데이터도 콘솔에 출력
-        console.log('매핑된 개별 데이터:', {
-          id: item.ID || '',
-          name: item.name || '',
-          phone: item.phone || '',
-          birth: item.birth || '',
-          resumer_history: item.resumer_history || '',
-          summary: item.summary || '',
-          evaluation: item.evaluation || '',
-          resume_html_with_image,
-          createdate: item.createdate || '',
-          image: item.image || ''
-        });
-
         return {
           id: item.ID || '',
           name: item.name || '',
@@ -91,8 +68,7 @@ export const Resume = () => {
           resumer_history: item.resumer_history || '',
           summary: item.summary || '',
           evaluation: item.evaluation || '',
-          resume_html: item.resume_html || '', // 원본 HTML 유지
-          resume_html_with_image, // 이미지가 포함된 HTML 저장
+          resume_html: item.resume_html || '',
           createdate: item.createdate || '',
           image: item.image || ''
         };
@@ -296,7 +272,7 @@ export const Resume = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedItem(item);
-                            setShowResume(item.resume_html_with_image); // 이미지가 포함된 HTML 사용
+                            setShowResume(item.resume_html);
                           }}
                         >
                           보기
@@ -366,7 +342,7 @@ export const Resume = () => {
       {/* 이력서 모달 */}
       {showResume && selectedItem && (
         <ResumeModal
-          html={showResume} // 이미지가 포함된 HTML 전달
+          html={selectedItem.resume_html} // 원본 HTML 전달
           id={selectedItem.id}
           onSaveSuccess={() => {
             fetchInterviewData();

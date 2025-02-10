@@ -27,31 +27,53 @@ export const ResumeModal = ({ html, id, onClose, onSaveSuccess }: ResumeModalPro
     if (contentRef.current) {
       setIsSaving(true);
       try {
-        const updatedHtml = contentRef.current.innerHTML;
-        setEditedHtml(updatedHtml); // 수정된 HTML 저장
+        let updatedHtml = contentRef.current.innerHTML;
 
-        // ID 값 확인
+        // 이미지 태그를 변경하지 않고 그대로 사용
+        setEditedHtml(updatedHtml);
+
         if (!id) {
           throw new Error('이력서 ID가 없습니다.');
+        }
+
+        // FormData 객체 생성
+        const formData = new FormData();
+        formData.append('ID', id);
+        formData.append('resume_html', updatedHtml);
+
+        // Base64 이미지를 Blob으로 변환하여 추가
+        if (profileImage) {
+          // Base64 문자열에서 실제 데이터 부분만 추출
+          const base64Data = profileImage.split(',')[1];
+          // Base64를 Blob으로 변환
+          const byteCharacters = atob(base64Data);
+          const byteArrays = [];
+          
+          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            
+            for (let i = 0; i < slice.length; i++) {
+              byteNumbers[i] = slice.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+
+          const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+          formData.append('image', blob, 'profile.jpg');
         }
 
         console.log('저장 요청 데이터:', { 
           id, 
           htmlLength: updatedHtml.length,
-          imageLength: profileImage?.length || 0 
+          hasImage: !!profileImage
         }); 
 
         const response = await fetch(process.env.REACT_APP_RESUME_SAVE_WEBHOOK_URL!, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            ID: id,
-            resume_html: updatedHtml,
-            image: profileImage || '' // 이미지가 없을 경우 빈 문자열 전송
-          })
+          body: formData
         });
 
         if (!response.ok) {
