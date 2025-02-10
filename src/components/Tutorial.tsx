@@ -29,7 +29,7 @@ export const Tutorial = ({ onComplete }: TutorialProps) => {
     const speakTutorialMessage = async () => {
       setIsAiSpeaking(true);
       try {
-        const tutorialMessage = "이것은 연습 과정입니다. 초록색 답변 시작. 버튼을 눌러 답변이 제대로 나오는지 확인해보세요. 답변 완료 후. 빨간색 답변 종료. 버튼을 눌러주세요. 연습이 충분하다면 면접 진행하기 버튼을 눌러 면접을 진행해보세요.";
+        const tutorialMessage = "이것은 연습 과정입니다. 초록색 답변 시작 버튼을 눌러 답변이 제대로 나오는지 확인해보세요. 답변 완료 후. 빨간색 답변 종료 버튼을 눌러주세요. 연습이 충분하다면 면접 진행하기 버튼을 눌러 면접을 진행해보세요.";
         const audioData = await textToSpeech(tutorialMessage);
         
         // 오디오 재생이 완료될 때까지 기다림
