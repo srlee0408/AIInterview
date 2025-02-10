@@ -11,6 +11,7 @@ export interface InterviewData {
   resume_html: string;
   createdate: string;
   image: string;
+  status: string;
 }
 
 export type SortDirection = 'asc' | 'desc';

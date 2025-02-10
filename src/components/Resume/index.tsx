@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewData, SortDirection, SortField } from './resumeUtils';
 import { ResumeModal } from './ResumeModal';
 import { DetailModal } from './DetailModal';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../../firebase';  // firebase.ts에서 가져오기
 
 // 메인 이력서 컴포넌트 (테이블, 정렬, 페이지네이션 포함)
 export const Resume = () => {
@@ -12,7 +14,7 @@ export const Resume = () => {
       fetchUrl: process.env.REACT_APP_RESUME_FETCH_WEBHOOK_URL,
       nodeEnv: process.env.NODE_ENV
     });
-  }, []);
+  }, []); 
 
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
   const [selectedItem, setSelectedItem] = useState<InterviewData | null>(null);
@@ -21,14 +23,66 @@ export const Resume = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showResume, setShowResume] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  // Realtime Database 사용
+  useEffect(() => {
+    try {
+      console.log('Firebase Realtime Database 연결 시도...');
+      
+      if (!database) {
+        console.error('database가 초기화되지 않았습니다.');
+        return;
+      }
+
+      const refreshRef = ref(database, 'refresh');
+      console.log('refreshRef 생성됨:', refreshRef);
+
+      const unsubscribe = onValue(refreshRef, (snapshot) => {
+        console.log('데이터 변경 감지:', snapshot.val());
+        
+        const data = snapshot.val();
+        if (data) {
+          let latestData;
+          // make.com에서 직접 { action: 'refresh' } 형식으로 데이터를 보내는 경우도 고려함
+          if (data.action) {
+            latestData = data;
+          } else {
+            // 기존 로직: 데이터가 여러 자식 객체로 구성된 경우
+            const keys = Object.keys(data).sort();
+            latestData = data[keys[keys.length - 1]];
+          }
+          
+          console.log('최신 데이터:', latestData);
+          
+          if (latestData && latestData.action === 'refresh') {
+            console.log('새로고침 신호 수신:', latestData);
+            fetchInterviewData();
+          }
+        }
+      }, (error) => {
+        console.error('Firebase 데이터 감시 중 에러:', error);
+      });
+
+      // 초기 데이터 로드
+      fetchInterviewData();
+
+      return () => {
+        console.log('Firebase 연결 정리...');
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error('Firebase 설정 중 에러:', error);
+    }
+  }, []);
+
   // 데이터 가져오기 함수를 컴포넌트 레벨로 이동
   const fetchInterviewData = async () => {
+    console.log('데이터 가져오기 시작...');
     try {
       const webhookUrl = process.env.REACT_APP_RESUME_FETCH_WEBHOOK_URL || '';
       
@@ -80,7 +134,8 @@ export const Resume = () => {
           evaluation: item.evaluation || '',
           resume_html: item.resume_html || '',
           createdate: item.createdate || '',
-          image: item.image || ''
+          image: item.image || '',
+          status: item.status || ''
         };
       });
       
@@ -95,14 +150,10 @@ export const Resume = () => {
       setError(`데이터를 불러오는데 실패했습니다: ${errorMessage}`);
       setInterviewData([]);
     } finally {
+      console.log('데이터 가져오기 완료');
       setIsLoading(false);
     }
   };
-
-  // 초기 데이터 로딩
-  useEffect(() => {
-    fetchInterviewData();
-  }, []);
 
   // 검색 필터링
   const filteredData = interviewData.filter(item => 
@@ -341,19 +392,22 @@ const ResumeTable = ({
     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
       <thead className="bg-gray-50 dark:bg-gray-700">
         <tr>
-          <th className="w-1/6 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <th className="w-1/7 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             프로필 이미지
           </th>
-          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <th className="w-1/7 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             이름
           </th>
-          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <th className="w-1/7 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             연락처
           </th>
-          <th className="w-1/4 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <th className="w-1/7 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             이력서
           </th>
-          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <th className="w-1/7 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            평가 상태
+          </th>
+          <th className="w-1/7 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             생성일
           </th>
         </tr>
@@ -396,6 +450,20 @@ const ResumeTable = ({
               >
                 보기
               </button>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                  ${
+                    item.status === '평가 중'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : item.status === '평가 완료'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+              >
+                {item.status || '대기 중'}
+              </span>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
               {new Date(item.createdate).toLocaleDateString()}

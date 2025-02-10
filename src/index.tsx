@@ -16,3 +16,8 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+console.log('앱 시작...', {
+  NODE_ENV: process.env.NODE_ENV,
+  FIREBASE_DATABASE_URL: process.env.REACT_APP_FIREBASE_DATABASE_URL
+});
