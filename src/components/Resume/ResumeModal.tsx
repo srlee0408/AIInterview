@@ -1,15 +1,39 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import html2pdf from 'html2pdf.js';
+
+// PDF 옵션 타입 정의
+interface Html2PdfOptions {
+  margin?: number | [number, number, number, number];
+  filename?: string;
+  image?: {
+    type?: string;
+    quality?: number;
+  };
+  html2canvas?: {
+    scale?: number;
+    useCORS?: boolean;
+    logging?: boolean;
+    letterRendering?: boolean;
+  };
+  jsPDF?: {
+    unit?: string;
+    format?: string;
+    orientation?: 'portrait' | 'landscape';
+    compress?: boolean;
+  };
+}
 
 // 이력서 모달 컴포넌트 (편집 가능)
 interface ResumeModalProps {
   html: string;
   id: string;
+  name?: string;
   onClose: () => void;
   onSaveSuccess: () => void;
 }
 
-export const ResumeModal = ({ html, id, onClose, onSaveSuccess }: ResumeModalProps) => {
+export const ResumeModal = ({ html, id, name, onClose, onSaveSuccess }: ResumeModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedHtml, setEditedHtml] = useState(html); // 수정된 HTML 저장
   const [profileImage, setProfileImage] = useState<string>("");
@@ -137,6 +161,88 @@ export const ResumeModal = ({ html, id, onClose, onSaveSuccess }: ResumeModalPro
     }
   };
 
+  // PDF 다운로드 함수 수정
+  const handleDownloadPDF = async () => {
+    if (contentRef.current) {
+      try {
+        // PDF 생성을 위한 임시 컨테이너 생성
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = contentRef.current.innerHTML;
+        
+        // 이미지 로딩 완료 대기
+        const images = tempContainer.getElementsByTagName('img');
+        const imageLoadPromises = Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+        });
+
+        // 모든 이미지가 로드될 때까지 대기
+        await Promise.all(imageLoadPromises);
+
+        // PDF 옵션 설정
+        const options: Html2PdfOptions = {
+          margin: [7, 7, 7, 7], // 상, 우, 하, 좌 여백
+          filename: `이력서_${name || '미정'}.pdf`,
+          image: { type: 'jpeg', quality: 1 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            letterRendering: true
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' as 'portrait' | 'landscape',
+            compress: true
+          }
+        };
+
+        // 스타일 추가
+        const style = document.createElement('style');
+        style.textContent = `
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          @page {
+            margin: 7mm;
+            size: A4;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+          .resume-content {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            word-break: break-word;
+          }
+          /* 각 역량 및 점수 평가 부분이 한 페이지에 같이 나오도록 설정 */
+          .evaluation-section, .competency-section, .score-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+        `;
+        tempContainer.prepend(style);
+
+        // HTML을 PDF로 변환
+        await html2pdf()
+          .set(options as any)
+          .from(tempContainer)
+          .save();
+
+      } catch (error) {
+        console.error('PDF 다운로드 오류:', error);
+        alert('PDF 다운로드에 실패했습니다. 이미지 로딩에 문제가 있을 수 있습니다.');
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -178,12 +284,23 @@ export const ResumeModal = ({ html, id, onClose, onSaveSuccess }: ResumeModalPro
                 </label>
               </>
             ) : (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                수정
-              </button>
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586L7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                  </svg>
+                  PDF 다운로드
+                </button>
+              </>
             )}
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>

@@ -342,8 +342,9 @@ export const Resume = () => {
       {/* 이력서 모달 */}
       {showResume && selectedItem && (
         <ResumeModal
-          html={selectedItem.resume_html} // 원본 HTML 전달
+          html={selectedItem.resume_html}
           id={selectedItem.id}
+          name={selectedItem.name}
           onSaveSuccess={() => {
             fetchInterviewData();
           }}
