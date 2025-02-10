@@ -1,31 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import html2pdf from 'html2pdf.js';
 import { PdfGenerator } from './PdfGenerator';
 
-// PDF 옵션 타입 정의
-interface Html2PdfOptions {
-  margin?: number | [number, number, number, number];
-  filename?: string;
-  image?: {
-    type?: string;
-    quality?: number;
-  };
-  html2canvas?: {
-    scale?: number;
-    useCORS?: boolean;
-    logging?: boolean;
-    letterRendering?: boolean;
-    windowWidth?: number;
-    windowHeight?: number;
-  };
-  jsPDF?: {
-    unit?: string;
-    format?: string;
-    orientation?: 'portrait' | 'landscape';
-    compress?: boolean;
-  };
-}
 
 // 이력서 모달 컴포넌트 (편집 가능)
 interface ResumeModalProps {
