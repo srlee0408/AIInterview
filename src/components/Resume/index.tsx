@@ -52,16 +52,24 @@ export const Resume = () => {
         throw new Error(`데이터를 불러오는데 실패했습니다. Status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const responseData = await response.json();
       
       // 받은 데이터 전체를 콘솔에 출력
-      console.log('웹훅으로 받은 원본 데이터:', data);
+      console.log('웹훅으로 받은 원본 데이터:', responseData);
       
-      if (!Array.isArray(data)) {
+      if (!Array.isArray(responseData)) {
         throw new Error('서버에서 받은 데이터가 배열 형식이 아닙니다.');
       }
       
-      const mappedData = data.map((item: any) => {
+      // 모든 응답의 data 배열을 하나로 합침
+      const allData = responseData.reduce((acc: any[], item: any) => {
+        if (item.data && Array.isArray(item.data)) {
+          return [...acc, ...item.data];
+        }
+        return acc;
+      }, []);
+      
+      const mappedData = allData.map((item: any) => {
         return {
           id: item.ID || '',
           name: item.name || '',
