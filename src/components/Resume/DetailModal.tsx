@@ -58,7 +58,7 @@ export const DetailModal = ({ item, onClose }: DetailModalProps) => {
             <h3 className="font-semibold mb-2 dark:text-white">면접 요약</h3>
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
               {item.summary ? (
-                <p className="whitespace-pre-wrap dark:text-white">{item.summary}</p>
+                <p className="whitespace-pre-wrap dark:text-white">{convertMarkdownToText(item.summary)}</p>
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 italic">평가 중...</p>
               )}
@@ -70,7 +70,7 @@ export const DetailModal = ({ item, onClose }: DetailModalProps) => {
             <h3 className="font-semibold mb-2 dark:text-white">면접 평가</h3>
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
               {item.evaluation ? (
-                <p className="whitespace-pre-wrap dark:text-white">{item.evaluation}</p>
+                <p className="whitespace-pre-wrap dark:text-white">{convertMarkdownToText(item.evaluation)}</p>
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 italic">평가 중...</p>
               )}
