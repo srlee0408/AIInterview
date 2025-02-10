@@ -19,6 +19,19 @@ type SortDirection = 'asc' | 'desc';
 // 정렬 필드 타입 정의
 type SortField = 'name' | 'phone' | 'createdate';
 
+// 마크다운 텍스트를 순수 텍스트로 변환하는 함수 추가
+const convertMarkdownToText = (markdown: string) => {
+  return markdown
+    .replace(/#{1,6}\s/g, '') // 헤더 제거
+    .replace(/\*\*/g, '') // 볼드체 제거
+    .replace(/\*/g, '') // 이탤릭체 제거
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1') // 링크 제거
+    .replace(/\n\s*[-*+]\s/g, '\n• ') // 리스트를 bullet point로 변환
+    .replace(/---/g, '') // 구분선 제거
+    .replace(/\n{3,}/g, '\n\n') // 3개 이상의 연속된 줄바꿈을 2개로 통일
+    .trim(); // 앞뒤 공백 제거
+};
+
 // 메인 컴포넌트 수정
 export const Resume = () => {
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
@@ -283,7 +296,7 @@ export const Resume = () => {
             </div>
 
             {/* 기본 정보 영역 */}
-            <div className="grid grid-cols-2 gap-4 py-6 border-b dark:border-gray-700">
+            <div className="grid grid-cols-3 gap-4 py-6 border-b dark:border-gray-700">
               <div className="text-gray-900 dark:text-white">
                 <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
                 <p className="font-medium">{selectedItem.phone}</p>
@@ -292,26 +305,20 @@ export const Resume = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400">생년월일</p>
                 <p className="font-medium">{selectedItem.birth}</p>
               </div>
+              <div className="text-gray-900 dark:text-white">
+                <p className="text-sm text-gray-500 dark:text-gray-400">생성일</p>
+                <p className="font-medium">{new Date(selectedItem.createdate).toLocaleDateString()}</p>
+              </div>
             </div>
 
             {/* 상세 정보 영역 */}
             <div className="space-y-6 pt-6 text-gray-900 dark:text-white">
-              {/* 면접 내용 섹션 */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">면접 내용</h3>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                    {selectedItem.resumer_history}
-                  </p>
-                </div>
-              </div>
-
               {/* AI 요약 섹션 */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 요약</h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {selectedItem.summary}
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                    {convertMarkdownToText(selectedItem.summary)}
                   </p>
                 </div>
               </div>
@@ -320,8 +327,18 @@ export const Resume = () => {
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 평가</h3>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {selectedItem.evaluation}
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                    {convertMarkdownToText(selectedItem.evaluation)}
+                  </p>
+                </div>
+              </div>
+
+              {/* 면접 내용 섹션 */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">면접 내용</h3>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
+                    {selectedItem.resumer_history}
                   </p>
                 </div>
               </div>
