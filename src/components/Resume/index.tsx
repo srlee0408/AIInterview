@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewData, SortDirection, SortField } from './resumeUtils';
 import { ResumeModal } from './ResumeModal';
 import { DetailModal } from './DetailModal';
@@ -24,6 +24,8 @@ export const Resume = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [showResume, setShowResume] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   // 데이터 가져오기 함수를 컴포넌트 레벨로 이동
   const fetchInterviewData = async () => {
@@ -173,158 +175,56 @@ export const Resume = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          {/* 로딩 상태 표시 */}
-          {isLoading && (
+          {/* 로딩 상태 및 에러 메시지 */}
+          {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-[3px] border-primary border-t-transparent mx-auto"></div>
               <p className="mt-4 text-gray-600 dark:text-gray-400">데이터를 불러오는 중...</p>
             </div>
-          )}
-          {/* 에러 메시지 표시 */}
-          {error && (
+          ) : error ? (
             <div className="text-red-500 dark:text-red-400 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-lg">
               {error}
             </div>
-          )}
-          {/* 데이터 테이블 */}
-          {!isLoading && !error && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="w-1/6 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      프로필 이미지
-                    </th>
-                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      <button 
-                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
-                        onClick={() => toggleSort('name')}
-                      >
-                        <span>이름</span>
-                        {sortField === 'name' && (
-                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </button>
-                    </th>
-                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      <button 
-                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
-                        onClick={() => toggleSort('phone')}
-                      >
-                        <span>연락처</span>
-                        {sortField === 'phone' && (
-                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </button>
-                    </th>
-                    <th className="w-1/4 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      이력서
-                    </th>
-                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      <button 
-                        className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
-                        onClick={() => toggleSort('createdate')}
-                      >
-                        <span>생성일</span>
-                        {sortField === 'createdate' && (
-                          <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {paginatedData.map((item, index) => (
-                    <tr 
-                      key={index} 
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={(e) => {
-                        if (!(e.target as HTMLElement).closest('.resume-button')) {
-                          setSelectedItem(item);
-                        }
-                      }}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={`${item.name}의 프로필`}
-                            className="w-12 h-12 rounded-full mx-auto object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/default-profile.png'; // 기본 이미지 경로
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-gray-200 mx-auto flex items-center justify-center">
-                            <span className="text-gray-500">No IMG</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {item.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {item.phone}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        <button
-                          className="resume-button inline-flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[60px]"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedItem(item);
-                            setShowResume(item.resume_html);
-                          }}
-                        >
-                          보기
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {new Date(item.createdate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {/* 페이지네이션 컨트롤 */}
-          <div className="mt-4 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700 dark:text-gray-300">페이지당 항목:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
+          ) : (
+            <>
+              {/* 데이터 테이블 */}
+              <ResumeTable
+                data={paginatedData}
+                onRowClick={(item) => {
+                  if (!item.resume_html || item.resume_html.trim() === '') {
+                    setAlertMessage('이력서 정보가 없습니다.');
+                    setShowAlert(true);
+                    setTimeout(() => setShowAlert(false), 3000);
+                    return;
+                  }
+                  setSelectedItem(item);
+                  setShowResume(item.resume_html);
+                }}
+                onViewResume={(item, e) => {
+                  e.stopPropagation();
+                  if (!item.resume_html || item.resume_html.trim() === '') {
+                    setAlertMessage('이력서 정보가 없습니다.');
+                    setShowAlert(true);
+                    setTimeout(() => setShowAlert(false), 3000);
+                    return;
+                  }
+                  setSelectedItem(item);
+                  setShowResume(item.resume_html);
+                }}
+              />
+              {/* 페이지네이션 */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onChangeItemsPerPage={(size) => {
+                  setItemsPerPage(size);
                   setCurrentPage(1);
                 }}
-                className="border rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-white"
-              >
-                {[5, 10, 20, 50].map(size => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-white disabled:opacity-50"
-              >
-                이전
-              </button>
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-white disabled:opacity-50"
-              >
-                다음
-              </button>
-            </div>
-          </div>
+              />
+            </>
+          )}
         </div>
       </motion.div>
 
@@ -354,6 +254,152 @@ export const Resume = () => {
           }}
         />
       )}
+
+      <AlertMessage message={alertMessage} show={showAlert} />
     </div>
   );
-}; 
+};
+
+// AlertMessage 컴포넌트: 커스텀 알림 메시지를 표시합니다.
+const AlertMessage = ({ message, show }: { message: string; show: boolean }) => (
+  <AnimatePresence>
+    {show && (
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
+        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+      >
+        {message}
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+// Pagination 컴포넌트: 페이지 네비게이션을 처리합니다.
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPrev,
+  onNext,
+  onChangeItemsPerPage,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onChangeItemsPerPage: (size: number) => void;
+}) => (
+  <div className="mt-4 flex justify-between items-center">
+    <div className="flex items-center space-x-2">
+      <span className="text-sm text-gray-700 dark:text-gray-300">페이지당 항목:</span>
+      <select
+        onChange={(e) => onChangeItemsPerPage(Number(e.target.value))}
+        className="border rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-white"
+      >
+        {[5, 10, 20, 50].map((size) => (
+          <option key={size} value={size}>
+            {size}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={onPrev}
+        disabled={currentPage === 1}
+        className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-white disabled:opacity-50"
+      >
+        이전
+      </button>
+      <span className="text-sm text-gray-700 dark:text-gray-300">
+        {currentPage} / {totalPages}
+      </span>
+      <button
+        onClick={onNext}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 rounded border dark:bg-gray-700 dark:text-white disabled:opacity-50"
+      >
+        다음
+      </button>
+    </div>
+  </div>
+);
+
+// ResumeTable 컴포넌트: 이력서 데이터를 표로 렌더링하는 로직을 분리하여 UI 수정 및 확장이 용이합니다.
+const ResumeTable = ({
+  data,
+  onRowClick,
+  onViewResume,
+}: {
+  data: InterviewData[];
+  onRowClick: (item: InterviewData) => void;
+  onViewResume: (item: InterviewData, e: React.MouseEvent) => void;
+}) => (
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead className="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th className="w-1/6 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            프로필 이미지
+          </th>
+          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            이름
+          </th>
+          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            연락처
+          </th>
+          <th className="w-1/4 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            이력서
+          </th>
+          <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            생성일
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        {data.map((item, index) => (
+          <tr
+            key={index}
+            className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            onClick={(e) => onRowClick(item)}
+          >
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={`${item.name}의 프로필`}
+                  className="w-12 h-12 rounded-full mx-auto object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/default-profile.png';
+                  }}
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 mx-auto flex items-center justify-center">
+                  <span className="text-gray-500">No IMG</span>
+                </div>
+              )}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+              {item.name}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+              {item.phone}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+              <button
+                className="resume-button inline-flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[60px]"
+                onClick={(e) => onViewResume(item, e)}
+              >
+                보기
+              </button>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+              {new Date(item.createdate).toLocaleDateString()}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+); 
