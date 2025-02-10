@@ -52,21 +52,54 @@ export const Resume = () => {
       
       const data = await response.json();
       
+      // 받은 데이터 전체를 콘솔에 출력
+      console.log('웹훅으로 받은 원본 데이터:', data);
+      
       if (!Array.isArray(data)) {
         throw new Error('서버에서 받은 데이터가 배열 형식이 아닙니다.');
       }
       
-      const mappedData = data.map((item: any) => ({
-        id: item.ID || '',
-        name: item.name || '',
-        phone: item.phone || '',
-        birth: item.birth || '',
-        resumer_history: item.resumer_history || '',
-        summary: item.summary || '',
-        evaluation: item.evaluation || '',
-        resume_html: item.resume_html || '',
-        createdate: item.createdate || ''
-      }));
+      const mappedData = data.map((item: any) => {
+        // resume_html이 null이 아닐 때만 이미지 교체 수행
+        const resume_html_with_image = item.resume_html 
+          ? item.resume_html.replace(
+              // alt="Profile"을 가진 이미지 태그를 찾아서 교체
+              /<img[^>]*alt="Profile"[^>]*>/gi,
+              `<img src="${item.image || ''}" alt="Profile" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">`
+            )
+          : '';
+
+        // 각 항목별 매핑된 데이터도 콘솔에 출력
+        console.log('매핑된 개별 데이터:', {
+          id: item.ID || '',
+          name: item.name || '',
+          phone: item.phone || '',
+          birth: item.birth || '',
+          resumer_history: item.resumer_history || '',
+          summary: item.summary || '',
+          evaluation: item.evaluation || '',
+          resume_html_with_image,
+          createdate: item.createdate || '',
+          image: item.image || ''
+        });
+
+        return {
+          id: item.ID || '',
+          name: item.name || '',
+          phone: item.phone || '',
+          birth: item.birth || '',
+          resumer_history: item.resumer_history || '',
+          summary: item.summary || '',
+          evaluation: item.evaluation || '',
+          resume_html: item.resume_html || '', // 원본 HTML 유지
+          resume_html_with_image, // 이미지가 포함된 HTML 저장
+          createdate: item.createdate || '',
+          image: item.image || ''
+        };
+      });
+      
+      // 최종 매핑된 전체 데이터 출력
+      console.log('최종 매핑된 전체 데이터:', mappedData);
       
       setInterviewData(mappedData);
       setError(null);
@@ -183,6 +216,9 @@ export const Resume = () => {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
+                    <th className="w-1/6 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      프로필 이미지
+                    </th>
                     <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button 
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
@@ -232,6 +268,22 @@ export const Resume = () => {
                         }
                       }}
                     >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={`${item.name}의 프로필`}
+                            className="w-12 h-12 rounded-full mx-auto object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/default-profile.png'; // 기본 이미지 경로
+                            }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gray-200 mx-auto flex items-center justify-center">
+                            <span className="text-gray-500">No IMG</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.name}
                       </td>
@@ -244,7 +296,7 @@ export const Resume = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedItem(item);
-                            setShowResume(item.resume_html);
+                            setShowResume(item.resume_html_with_image); // 이미지가 포함된 HTML 사용
                           }}
                         >
                           보기
@@ -314,10 +366,10 @@ export const Resume = () => {
       {/* 이력서 모달 */}
       {showResume && selectedItem && (
         <ResumeModal
-          html={showResume}
+          html={showResume} // 이미지가 포함된 HTML 전달
           id={selectedItem.id}
           onSaveSuccess={() => {
-            fetchInterviewData();  // 저장 성공 시 데이터 새로고침
+            fetchInterviewData();
           }}
           onClose={() => {
             setShowResume(null);

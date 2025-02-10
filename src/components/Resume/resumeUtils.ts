@@ -9,7 +9,9 @@ export interface InterviewData {
   summary: string;
   evaluation: string;
   resume_html: string;
+  resume_html_with_image: string;
   createdate: string;
+  image: string;
 }
 
 export type SortDirection = 'asc' | 'desc';
