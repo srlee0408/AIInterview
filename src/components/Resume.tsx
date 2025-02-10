@@ -32,6 +32,301 @@ const convertMarkdownToText = (markdown: string) => {
     .trim(); // 앞뒤 공백 제거
 };
 
+// 연락처 포맷팅 함수 추가
+const formatPhoneNumber = (phone: string) => {
+  // 숫자만 추출
+  const numbers = phone.replace(/[^0-9]/g, '');
+  
+  // 길이에 따른 포맷팅
+  if (numbers.length === 11) {
+    // 010-1234-5678 형식
+    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+  } else if (numbers.length === 10) {
+    // 02-123-4567 형식
+    return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+  } else {
+    // 그 외의 경우 원본 반환
+    return phone;
+  }
+};
+
+// 이력서 데이터 인터페이스 추가
+interface ResumeFormData {
+  profileImage: string;
+  name: string;
+  position: string;
+  basicInfo: {
+    성명: string;
+    희망근무형태: string;
+    근무가능시간: string;
+    희망급여: string;
+    입사가능일: string;
+    운전면허: string;
+    자차운행: string;
+    급여수령: string;
+    거주지: string;
+    연락처: string;
+    이메일: string;
+  };
+  scores: {
+    근속: { score: number; reason: string };
+    근태: { score: number; reason: string };
+    수용성: { score: number; reason: string };
+    체력: { score: number; reason: string };
+    배송업적합성: { score: number; reason: string };
+    디지털기기사용능력: { score: number; reason: string };
+  };
+  experience: string[];
+  evaluation: {
+    totalScore: number;
+    status: string;
+    recommendations: string[];
+    concerns: string[];
+    specialNotes: string[];
+  };
+}
+
+// HTML을 데이터 객체로 파싱하는 함수
+const parseHtmlToData = (html: string): ResumeFormData => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  // 여기서 HTML에서 필요한 데이터를 추출하여 ResumeFormData 객체로 변환
+  // ... 구현 필요
+  
+  return {
+    profileImage: '',
+    name: '',
+    position: '',
+    basicInfo: {
+      성명: '',
+      희망근무형태: '',
+      근무가능시간: '',
+      희망급여: '',
+      입사가능일: '',
+      운전면허: '',
+      자차운행: '',
+      급여수령: '',
+      거주지: '',
+      연락처: '',
+      이메일: ''
+    },
+    scores: {
+      근속: { score: 0, reason: '' },
+      근태: { score: 0, reason: '' },
+      수용성: { score: 0, reason: '' },
+      체력: { score: 0, reason: '' },
+      배송업적합성: { score: 0, reason: '' },
+      디지털기기사용능력: { score: 0, reason: '' }
+    },
+    experience: [],
+    evaluation: {
+      totalScore: 0,
+      status: '',
+      recommendations: [],
+      concerns: [],
+      specialNotes: []
+    }
+  };
+};
+
+// 데이터를 HTML로 변환하는 함수
+const convertDataToHtml = (data: ResumeFormData): string => {
+  // ResumeFormData를 HTML 문자열로 변환
+  // ... 구현 필요
+  return '';
+};
+
+// 이력서 모달 컴포넌트 수정
+const ResumeModal = ({ 
+  html, 
+  onClose,
+  onSave
+}: { 
+  html: string; 
+  onClose: () => void;
+  onSave?: (updatedHtml: string) => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>("");
+
+  // contentEditable ref 추가
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  const handleSave = async () => {
+    if (onSave && contentRef.current) {
+      const updatedHtml = contentRef.current.innerHTML;
+      await onSave(updatedHtml);
+      setIsEditing(false);
+    }
+  };
+
+  // 이미지 업로드 처리
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+        if (contentRef.current) {
+          const imgElement = contentRef.current.querySelector('img');
+          if (imgElement) {
+            imgElement.src = reader.result as string;
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                >
+                  취소
+                </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="profile-image-upload"
+                />
+                <label
+                  htmlFor="profile-image-upload"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+                >
+                  이미지 변경
+                </label>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                수정
+              </button>
+            )}
+          </div>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+        </div>
+
+        <div
+          ref={contentRef}
+          contentEditable={isEditing}
+          suppressContentEditableWarning={true}
+          className={`resume-content ${isEditing ? 'border border-gray-300 rounded-lg p-4' : ''}`}
+          dangerouslySetInnerHTML={{ __html: html }}
+          style={{
+            outline: 'none',
+            minHeight: '500px'
+          }}
+        />
+
+        {isEditing && (
+          <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <h3 className="text-sm font-medium mb-2">수정 도움말</h3>
+            <ul className="text-sm text-gray-600 dark:text-gray-300 list-disc pl-4">
+              <li>텍스트를 직접 클릭하여 수정할 수 있습니다.</li>
+              <li>이미지 변경 버튼을 클릭하여 프로필 이미지를 변경할 수 있습니다.</li>
+              <li>수정이 완료되면 저장 버튼을 클릭하세요.</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 상세 정보 모달 컴포넌트 추가
+const DetailModal = ({ 
+  item,
+  onClose 
+}: { 
+  item: InterviewData;
+  onClose: () => void;
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{item.name}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="space-y-6">
+          {/* 기본 정보 */}
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
+              <p className="font-medium text-gray-900 dark:text-white">
+                {formatPhoneNumber(item.phone)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">생년월일</p>
+              <p className="font-medium text-gray-900 dark:text-white">{item.birth}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">생성일</p>
+              <p className="font-medium text-gray-900 dark:text-white">
+                {new Date(item.createdate).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          {/* 면접 내용 */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">면접 내용</h3>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {item.resumer_history}
+              </p>
+            </div>
+          </div>
+
+          {/* AI 요약 */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 요약</h3>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {convertMarkdownToText(item.summary)}
+              </p>
+            </div>
+          </div>
+
+          {/* AI 평가 */}
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 평가</h3>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {convertMarkdownToText(item.evaluation)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 메인 컴포넌트 수정
 export const Resume = () => {
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
@@ -43,6 +338,7 @@ export const Resume = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showResume, setShowResume] = useState<string | null>(null);
 
   // 데이터 가져오기
   useEffect(() => {
@@ -138,6 +434,32 @@ export const Resume = () => {
     currentPage * itemsPerPage
   );
 
+  const handleSaveResume = async (updatedHtml: string) => {
+    try {
+      // API 엔드포인트로 업데이트된 HTML 전송
+      const response = await fetch('YOUR_API_ENDPOINT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resume_html: updatedHtml,
+          // 필요한 다른 데이터도 포함
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('이력서 저장에 실패했습니다.');
+      }
+
+      // 성공 시 데이터 새로고침
+      // fetchInterviewData(); // 데이터 새로고침 함수 호출
+    } catch (error) {
+      console.error('Error saving resume:', error);
+      alert('이력서 저장에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div
@@ -177,7 +499,7 @@ export const Resume = () => {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button 
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
                         onClick={() => toggleSort('name')}
@@ -188,7 +510,7 @@ export const Resume = () => {
                         )}
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button 
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
                         onClick={() => toggleSort('phone')}
@@ -199,7 +521,10 @@ export const Resume = () => {
                         )}
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="w-1/4 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      이력서
+                    </th>
+                    <th className="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       <button 
                         className="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-white"
                         onClick={() => toggleSort('createdate')}
@@ -223,7 +548,18 @@ export const Resume = () => {
                         {item.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {item.phone}
+                        {formatPhoneNumber(item.phone)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // 행 클릭 이벤트 전파 방지
+                            setShowResume(item.resume_html);
+                          }}
+                          className="inline-flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[60px]"
+                        >
+                          보기
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {new Date(item.createdate).toLocaleDateString()}
@@ -278,73 +614,19 @@ export const Resume = () => {
 
       {/* 상세 정보 모달 */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            {/* 헤더 영역 */}
-            <div className="flex justify-between items-center pb-6 border-b dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedItem.name}</h2>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white p-2"
-              >
-                ✕
-              </button>
-            </div>
+        <DetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
 
-            {/* 기본 정보 영역 */}
-            <div className="grid grid-cols-3 gap-4 py-6 border-b dark:border-gray-700">
-              <div className="text-gray-900 dark:text-white">
-                <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
-                <p className="font-medium">{selectedItem.phone}</p>
-              </div>
-              <div className="text-gray-900 dark:text-white">
-                <p className="text-sm text-gray-500 dark:text-gray-400">생년월일</p>
-                <p className="font-medium">{selectedItem.birth}</p>
-              </div>
-              <div className="text-gray-900 dark:text-white">
-                <p className="text-sm text-gray-500 dark:text-gray-400">생성일</p>
-                <p className="font-medium">{new Date(selectedItem.createdate).toLocaleDateString()}</p>
-              </div>
-            </div>
-
-            {/* 상세 정보 영역 */}
-            <div className="space-y-6 pt-6 text-gray-900 dark:text-white">
-              {/* AI 요약 섹션 */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 요약</h3>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                    {convertMarkdownToText(selectedItem.summary)}
-                  </p>
-                </div>
-              </div>
-
-              {/* AI 평가 섹션 */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI 평가</h3>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                    {convertMarkdownToText(selectedItem.evaluation)}
-                  </p>
-                </div>
-              </div>
-
-              {/* 면접 내용 섹션 */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">면접 내용</h3>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
-                    {selectedItem.resumer_history}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+      {/* 이력서 모달 */}
+      {showResume && (
+        <ResumeModal
+          html={showResume}
+          onClose={() => setShowResume(null)}
+          onSave={handleSaveResume}
+        />
       )}
     </div>
   );
