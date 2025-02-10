@@ -8,8 +8,10 @@ import { CameraCheck } from './components/CameraCheck';
 import { MicrophoneCheck } from './components/MicrophoneCheck';
 import { Tutorial } from './components/Tutorial';
 import { AppStep, InterviewAnswer } from './types/interview';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Resume } from './components/Resume';
 
-function App() {
+function MainApp() {
   const [currentStep, setCurrentStep] = useState<AppStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [answers, setAnswers] = useState<InterviewAnswer[]>([]);
@@ -97,6 +99,43 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 배경 컴포넌트를 별도로 분리
+const Background: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="min-h-screen min-h-[calc(var(--vh,1vh)*100)] dark">
+      <div className="relative min-h-screen min-h-[calc(var(--vh,1vh)*100)] overflow-hidden bg-gradient-to-br from-gray-900 via-background-dark to-black">
+        {/* 배경 효과 */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <motion.div
+          className="absolute inset-0 bg-gradient-radial from-primary/20 to-transparent"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <div className="relative z-10 flex flex-col h-full">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <Background>
+        <Routes>
+          <Route path="/" element={<MainApp />} />
+          <Route path="/resume" element={<Resume />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Background>
+    </Router>
   );
 }
 
