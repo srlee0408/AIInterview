@@ -25,72 +25,63 @@ export const Resume = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showResume, setShowResume] = useState<string | null>(null);
 
-  // 데이터 가져오기
-  useEffect(() => {
-    const fetchInterviewData = async () => {
-      try {
-        // webhook URL 확인
-        const webhookUrl = process.env.REACT_APP_RESUME_FETCH_WEBHOOK_URL || '';
-        
-        // 개발 환경에서 환경변수 확인
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Current webhook URL:', webhookUrl);
-        }
-
-        if (!webhookUrl) {
-          throw new Error('Webhook URL이 설정되지 않았습니다. 환경변수를 확인해주세요.');
-        }
-
-        console.log('Fetching data from:', webhookUrl); // 개발 중에만 사용
-
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            timestamp: new Date().toISOString(),
-            action: 'fetch_resume_data'
-          })
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`데이터를 불러오는데 실패했습니다. Status: ${response.status}, Details: ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log('Received data:', data); // 개발 중에만 사용
-        
-        if (!Array.isArray(data)) {
-          console.error('잘못된 데이터 구조:', data);
-          setInterviewData([]);
-          throw new Error('서버에서 받은 데이터가 배열 형식이 아닙니다.');
-        }
-        
-        const mappedData = data.map((item: any) => ({
-          name: item.name || '',
-          phone: item.phone || '',
-          birth: item.birth || '',
-          resumer_history: item.resumer_history || '',
-          summary: item.summary || '',
-          evaluation: item.evaluation || '',
-          resume_html: item.resume_html || '',
-          createdate: item.createdate || ''
-        }));
-        
-        setInterviewData(mappedData);
-      } catch (err) {
-        console.error('데이터 가져오기 오류:', err);
-        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-        setError(`데이터를 불러오는데 실패했습니다: ${errorMessage}`);
-        setInterviewData([]); // 에러 시 데이터 초기화
-      } finally {
-        setIsLoading(false);
+  // 데이터 가져오기 함수를 컴포넌트 레벨로 이동
+  const fetchInterviewData = async () => {
+    try {
+      const webhookUrl = process.env.REACT_APP_RESUME_FETCH_WEBHOOK_URL || '';
+      
+      if (!webhookUrl) {
+        throw new Error('Webhook URL이 설정되지 않았습니다. 환경변수를 확인해주세요.');
       }
-    };
 
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          action: 'fetch_resume_data'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`데이터를 불러오는데 실패했습니다. Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
+        throw new Error('서버에서 받은 데이터가 배열 형식이 아닙니다.');
+      }
+      
+      const mappedData = data.map((item: any) => ({
+        id: item.ID || '',
+        name: item.name || '',
+        phone: item.phone || '',
+        birth: item.birth || '',
+        resumer_history: item.resumer_history || '',
+        summary: item.summary || '',
+        evaluation: item.evaluation || '',
+        resume_html: item.resume_html || '',
+        createdate: item.createdate || ''
+      }));
+      
+      setInterviewData(mappedData);
+      setError(null);
+    } catch (err) {
+      console.error('데이터 가져오기 오류:', err);
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      setError(`데이터를 불러오는데 실패했습니다: ${errorMessage}`);
+      setInterviewData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 초기 데이터 로딩
+  useEffect(() => {
     fetchInterviewData();
   }, []);
 
@@ -175,13 +166,14 @@ export const Resume = () => {
           </div>
           {/* 로딩 상태 표시 */}
           {isLoading && (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-[3px] border-primary border-t-transparent mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">데이터를 불러오는 중...</p>
             </div>
           )}
           {/* 에러 메시지 표시 */}
           {error && (
-            <div className="text-red-500 text-center py-4">
+            <div className="text-red-500 dark:text-red-400 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-lg">
               {error}
             </div>
           )}
@@ -234,7 +226,11 @@ export const Resume = () => {
                     <tr 
                       key={index} 
                       className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => setSelectedItem(item)}
+                      onClick={(e) => {
+                        if (!(e.target as HTMLElement).closest('.resume-button')) {
+                          setSelectedItem(item);
+                        }
+                      }}
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.name}
@@ -244,11 +240,12 @@ export const Resume = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                         <button
+                          className="resume-button inline-flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[60px]"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setSelectedItem(item);
                             setShowResume(item.resume_html);
                           }}
-                          className="inline-flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[60px]"
                         >
                           보기
                         </button>
@@ -304,19 +301,28 @@ export const Resume = () => {
       </motion.div>
 
       {/* 상세 정보 모달 */}
-      {selectedItem && (
+      {selectedItem && !showResume && (
         <DetailModal
           item={selectedItem}
-          onClose={() => setSelectedItem(null)}
+          onClose={() => {
+            setSelectedItem(null);
+            setShowResume(null);
+          }}
         />
       )}
 
       {/* 이력서 모달 */}
-      {showResume && (
+      {showResume && selectedItem && (
         <ResumeModal
           html={showResume}
-          onClose={() => setShowResume(null)}
-          onSave={handleSaveResume}
+          id={selectedItem.id}
+          onSaveSuccess={() => {
+            fetchInterviewData();  // 저장 성공 시 데이터 새로고침
+          }}
+          onClose={() => {
+            setShowResume(null);
+            setSelectedItem(null);
+          }}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
 // 이 파일은 Resume 관련 유틸 함수와 타입들을 모아둔 파일입니다.
 
 export interface InterviewData {
+  id: string;
   name: string;
   phone: string;
   birth: string;
